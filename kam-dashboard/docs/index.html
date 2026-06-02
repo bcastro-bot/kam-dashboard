@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KAM BC — Dashboard de Cartera</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #ffffff; --bg2: #f7f6f2; --bg3: #f0efe9;
+    --txt: #1a1917; --txt2: #5f5e5a; --txt3: #888780;
+    --border: rgba(0,0,0,0.12); --radius: 10px;
+    --blue: #378ADD; --blue-light: #E6F1FB; --blue-dark: #185FA5;
+    --green: #3B6D11; --green-light: #EAF3DE;
+    --amber: #854F0B; --amber-light: #FAEEDA;
+    --red: #A32D2D; --red-light: #FCEBEB;
+    --teal: #085041; --teal-light: #E1F5EE;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1917; --bg2: #252422; --bg3: #2c2c2a;
+      --txt: #f0efe9; --txt2: #b4b2a9; --txt3: #5f5e5a;
+      --border: rgba(255,255,255,0.1);
+      --blue-light: #0c447c; --blue-dark: #85b7eb;
+      --green-light: #27500a; --green: #97c459;
+      --amber-light: #633806; --amber: #ef9f27;
+      --red-light: #791f1f; --red: #f09595;
+      --teal-light: #04342c; --teal: #5dcaa5;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg3); color: var(--txt); font-size: 14px; }
+  a { color: inherit; text-decoration: none; }
+
+  /* Layout */
+  .header { background: var(--bg); border-bottom: 0.5px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .header h1 { font-size: 15px; font-weight: 500; }
+  .header .meta { font-size: 11px; color: var(--txt3); }
+  .main { max-width: 1200px; margin: 0 auto; padding: 20px 16px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 2px; border-bottom: 0.5px solid var(--border); margin-bottom: 20px; overflow-x: auto; }
+  .tab { padding: 8px 16px; font-size: 12px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--txt2); cursor: pointer; white-space: nowrap; font-family: inherit; }
+  .tab.on { color: var(--blue); border-bottom-color: var(--blue); font-weight: 500; }
+
+  /* KPIs */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 20px; }
+  .kpi { background: var(--bg); border-radius: var(--radius); padding: 12px 14px; border: 0.5px solid var(--border); }
+  .kpi-label { font-size: 11px; color: var(--txt2); margin-bottom: 4px; }
+  .kpi-val { font-size: 22px; font-weight: 500; }
+  .kpi-sub { font-size: 10px; color: var(--txt3); margin-top: 2px; }
+
+  /* Cards */
+  .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .card-title { font-size: 11px; font-weight: 500; color: var(--txt2); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 12px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  @media(max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* Pills */
+  .pill { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 8px; font-weight: 500; white-space: nowrap; }
+  .p-activo  { background: var(--green-light); color: var(--green); }
+  .p-nuevo   { background: var(--teal-light);  color: var(--teal); }
+  .p-riesgo  { background: var(--amber-light); color: var(--amber); }
+  .p-churn   { background: var(--red-light);   color: var(--red); }
+
+  /* Buttons */
+  .btn { font-size: 11px; padding: 5px 12px; border-radius: 8px; border: 0.5px solid var(--border); background: none; color: var(--txt2); cursor: pointer; font-family: inherit; }
+  .btn.on { background: var(--bg2); color: var(--txt); font-weight: 500; }
+  .btn-grp { display: flex; gap: 4px; flex-wrap: wrap; }
+
+  /* Table */
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  th { font-size: 10px; font-weight: 500; color: var(--txt3); text-transform: uppercase; padding: 8px; text-align: right; white-space: nowrap; cursor: pointer; user-select: none; border-bottom: 0.5px solid var(--border); background: var(--bg2); }
+  th:hover { color: var(--txt); }
+  th.sorted { color: var(--txt); }
+  th.left { text-align: left; }
+  td { font-size: 12px; padding: 8px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg2); }
+  .mini-bar { height: 3px; border-radius: 1px; background: #85b7eb; margin-top: 3px; }
+
+  /* Search */
+  .search-wrap { position: relative; }
+  .search-wrap input { width: 100%; padding: 8px 10px 8px 32px; font-size: 12px; border: 0.5px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--txt); font-family: inherit; }
+  .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--txt3); pointer-events: none; }
+
+  /* Misc */
+  .pct-pill { font-size: 11px; font-weight: 500; padding: 2px 7px; border-radius: 8px; }
+  .note { font-size: 11px; color: var(--txt3); margin-top: 8px; }
+  .chart-wrap { position: relative; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--txt2); margin-bottom: 8px; }
+  .legend span { display: flex; align-items: center; gap: 4px; }
+  .legend-dot { width: 10px; height: 3px; border-radius: 1px; display: inline-block; }
+  #loading { display: flex; align-items: center; justify-content: center; height: 200px; color: var(--txt3); font-size: 14px; }
+  #error { display: none; padding: 20px; background: var(--red-light); color: var(--red); border-radius: var(--radius); margin: 20px 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>📊 KAM BC — Dashboard de Cartera</h1>
+    <div class="meta" id="last-update">Cargando datos...</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span class="btn" id="period-label">Período: Ene–May</span>
+    <select id="period-select" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--txt)" onchange="setPeriodFromSelect()">
+      <option value="mensual">Mes a mes (YoY)</option>
+      <option value="trimestral">Trimestral (YoY)</option>
+      <option value="ytd">YTD acumulado</option>
+    </select>
+  </div>
+</div>
+
+<div class="main">
+  <div id="loading">⏳ Cargando datos...</div>
+  <div id="error"></div>
+  <div id="app" style="display:none">
+    <div class="kpis" id="kpis"></div>
+    <div class="tabs">
+      <button class="tab on" onclick="showTab('cartera')">Cartera</button>
+      <button class="tab" onclick="showTab('clientes')">Por cliente</button>
+      <button class="tab" onclick="showTab('tabla')">Tabla completa</button>
+    </div>
+    <div id="pane-cartera"></div>
+    <div id="pane-clientes" style="display:none"></div>
+    <div id="pane-tabla" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+// ── Estado global ──────────────────────────────────────────────────────────
+let DATA = null;
+let curPeriod = 'mensual';
+let curTab = 'cartera';
+let curClient = null;
+let rankSort = 'total';
+let rankAsc = false;
+let tableFilter = 'all';
+let tableSort = 'total';
+let tableAsc = false;
+let charts = {};
+
+// ── Formatters ─────────────────────────────────────────────────────────────
+const fmt = v => {
+  if (!v || v === 0) return '—';
+  if (v >= 1e9) return '$' + (v/1e9).toFixed(1) + 'B';
+  if (v >= 1e6) return '$' + (v/1e6).toFixed(1) + 'M';
+  if (v >= 1e3) return '$' + (v/1e3).toFixed(0) + 'K';
+  return '$' + Math.round(v).toLocaleString('es-CL');
+};
+const fmtF = v => '$' + Math.round(v||0).toLocaleString('es-CL');
+const fmtP = v => v === null || v === undefined ? 's/d' : (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
+const pCol = v => v === null ? 'var(--txt3)' : v >= 20 ? 'var(--green)' : v >= -10 ? 'var(--blue)' : v >= -30 ? 'var(--amber)' : 'var(--red)';
+const pBg  = v => v === null ? 'transparent' : v >= 20 ? 'var(--green-light)' : v >= -10 ? 'var(--blue-light)' : v >= -30 ? 'var(--amber-light)' : 'var(--red-light)';
+const fmtM = m => { if (!m) return '—'; const [y,mo] = m.split('-'); const n=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']; return n[+mo] + ' ' + y.slice(2); };
+const killChart = id => { if (charts[id]) { charts[id].destroy(); delete charts[id]; } };
+
+// ── Carga de datos ─────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const r = await fetch('data.json?v=' + Date.now());
+    if (!r.ok) throw new Error('No se pudo cargar data.json (status ' + r.status + ')');
+    DATA = await r.json();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('last-update').textContent = 'Actualizado: ' + (DATA.generated_at || '—');
+    curClient = Object.keys(DATA.clients)[0];
+    initDashboard();
+  } catch (e) {
+    document.getElementById('loading').style.display = 'none';
+    const err = document.getElementById('error');
+    err.style.display = 'block';
+    err.textContent = '❌ ' + e.message + '. Asegúrate de haber ejecutado procesar_datos.py primero.';
+  }
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+function initDashboard() {
+  renderKPIs();
+  showTab('cartera');
+}
+
+function setPeriodFromSelect() {
+  curPeriod = document.getElementById('period-select').value;
+  renderKPIs();
+  if (curTab === 'cartera') buildCartera();
+  else if (curTab === 'clientes') buildCliente();
+  else buildTabla();
+}
+
+function showTab(t) {
+  curTab = t;
+  document.querySelectorAll('.tab').forEach((b, i) => b.classList.toggle('on', ['cartera','clientes','tabla'][i] === t));
+  ['cartera','clientes','tabla'].forEach(id => document.getElementById('pane-' + id).style.display = id === t ? 'block' : 'none');
+  if (t === 'cartera') buildCartera();
+  else if (t === 'clientes') buildCliente();
+  else buildTabla();
+}
+
+// ── KPIs ───────────────────────────────────────────────────────────────────
+function renderKPIs() {
+  const C = DATA.cartera;
+  const clients = Object.values(DATA.clients);
+  const counts = { activo: 0, nuevo: 0, 'en riesgo': 0, churn: 0 };
+  clients.forEach(c => counts[c.status] = (counts[c.status] || 0) + 1);
+  const ytdPct = C.ytd_pct;
+
+  document.getElementById('kpis').innerHTML = `
+    <div class="kpi">
+      <div class="kpi-label">Revenue total cartera</div>
+      <div class="kpi-val">${fmt(C.total)}</div>
+      <div class="kpi-sub">${DATA.months[0]} → ${DATA.months[DATA.months.length-1]}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">YTD vs mismo período 2025</div>
+      <div class="kpi-val" style="color:${pCol(ytdPct)}">${fmtP(ytdPct)}</div>
+      <div class="kpi-sub">${fmtF(C.ytd25)} → ${fmtF(C.ytd26)}</div>
+    </div>
+    <div class="kpi" style="background:var(--green-light)">
+      <div class="kpi-label" style="color:var(--green)">Activos + nuevos</div>
+      <div class="kpi-val" style="color:var(--green)">${counts.activo + counts.nuevo}</div>
+      <div class="kpi-sub" style="color:var(--green)">${Math.round((counts.activo + counts.nuevo) / clients.length * 100)}% de la cartera</div>
+    </div>
+    <div class="kpi" style="background:var(--amber-light)">
+      <div class="kpi-label" style="color:var(--amber)">En riesgo</div>
+      <div class="kpi-val" style="color:var(--amber)">${counts['en riesgo']}</div>
+      <div class="kpi-sub" style="color:var(--amber)">Sin compra 90–180 días</div>
+    </div>
+    <div class="kpi" style="background:var(--red-light)">
+      <div class="kpi-label" style="color:var(--red)">Churn</div>
+      <div class="kpi-val" style="color:var(--red)">${counts.churn}</div>
+      <div class="kpi-sub" style="color:var(--red)">Sin compra en 2026</div>
+    </div>`;
+}
+
+// ── Helpers de período ─────────────────────────────────────────────────────
+function getPeriodData(d) {
+  if (curPeriod === 'mensual') return d.mensual || [];
+  if (curPeriod === 'trimestral') return d.trimestral || [];
+  const ytd = [];
+  if (d.ytd25) ytd.push({ lbl: 'Ene–May 25', v25: d.ytd25, v26: null, pct: null });
+  if (d.ytd26) ytd.push({ lbl: 'Ene–May 26', v25: null, v26: d.ytd26, pct: d.ytd_pct });
+  return ytd;
+}
+
+function compCard(d) {
+  const pd = getPeriodData(d);
+  let html = '';
+  pd.forEach(p => {
+    if (curPeriod === 'ytd') {
+      if (p.v25) html += row('Ene–May 2025', fmtF(p.v25), 'var(--txt2)');
+      if (p.v26) html += row('Ene–May 2026', fmtF(p.v26), 'var(--txt)');
+      if (p.pct !== null && p.pct !== undefined) html += row('Variación YTD', fmtP(p.pct), pCol(p.pct));
+    } else if (p.v25 !== null || p.v26 !== null) {
+      const pill = p.pct !== null ? `<span class="pct-pill" style="background:${pBg(p.pct)};color:${pCol(p.pct)}">${fmtP(p.pct)}</span>` : '<span style="color:var(--txt3)">s/d</span>';
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border)">
+        <span style="font-size:12px;color:var(--txt2)">${p.lbl}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;color:var(--txt3)">${fmt(p.v25||0)} → ${fmt(p.v26||0)}</span>
+          ${pill}
+        </div></div>`;
+    }
+  });
+  return html || '<div style="color:var(--txt3);font-size:12px;padding:8px 0">Sin datos comparables para este período</div>';
+}
+
+function row(label, val, color) {
+  return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--border)">
+    <span style="font-size:12px;color:var(--txt2)">${label}</span>
+    <span style="font-size:13px;font-weight:500;color:${color}">${val}</span></div>`;
+}
+
+// ── Tab Cartera ────────────────────────────────────────────────────────────
+function buildCartera() {
+  killChart('c1'); killChart('c2');
+  const C = DATA.cartera;
+  const pd = getPeriodData(C).filter(p => p.v25 && p.v26);
+  const labels17 = DATA.month_labels || DATA.months;
+
+  document.getElementById('pane-cartera').innerHTML = `
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Comparación período equivalente — cartera</div>
+        ${compCard(C)}
+      </div>
+      <div class="card">
+        <div class="card-title">2025 vs 2026 — períodos comparables</div>
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#85b7eb"></span>2025</span>
+          <span><span class="legend-dot" style="background:#185FA5"></span>2026</span>
+        </div>
+        <div class="chart-wrap" style="height:170px"><canvas id="c2" role="img" aria-label="Comparación cartera">.</canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Historial completo — ${DATA.months[0]} a ${DATA.months[DATA.months.length-1]}</div>
+      <div class="legend">
+        <span><span class="legend-dot" style="background:#85b7eb"></span>2025</span>
+        <span><span class="legend-dot" style="background:#185FA5"></span>2026</span>
+      </div>
+      <div class="chart-wrap" style="height:200px"><canvas id="c1" role="img" aria-label="Historial cartera">.</canvas></div>
+    </div>`;
+
+  const n2025 = DATA.months.filter(m => m.startsWith('2025')).length;
+  const n2026 = DATA.months.filter(m => m.startsWith('2026')).length;
+
+  requestAnimationFrame(() => {
+    const opts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + fmtF(c.raw) } } }, scales: { x: { ticks: { autoSkip: true, maxTicksLimit: 12, font: { size: 9 } }, grid: { display: false } }, y: { ticks: { callback: v => fmt(v), font: { size: 9 } }, grid: { color: 'rgba(128,128,128,.08)' } } } };
+    const ctx1 = document.getElementById('c1');
+    if (ctx1) charts.c1 = new Chart(ctx1, { type: 'bar', data: { labels: labels17, datasets: [
+      { data: [...C.vals.slice(0, n2025), ...Array(n2026).fill(0)], backgroundColor: '#85b7eb', borderRadius: 3 },
+      { data: [...Array(n2025).fill(0), ...C.vals.slice(n2025)], backgroundColor: '#185FA5', borderRadius: 3 }
+    ]}, options: opts });
+
+    if (pd.length) {
+      const ctx2 = document.getElementById('c2');
+      if (ctx2) charts.c2 = new Chart(ctx2, { type: 'bar', data: { labels: pd.map(p => p.lbl), datasets: [
+        { label: '2025', data: pd.map(p => p.v25 || 0), backgroundColor: '#85b7eb', borderRadius: 3 },
+        { label: '2026', data: pd.map(p => p.v26 || 0), backgroundColor: '#185FA5', borderRadius: 3 }
+      ]}, options: { ...opts, plugins: { ...opts.plugins, legend: { display: false } } } });
+    }
+  });
+}
+
+// ── Tab Cliente ────────────────────────────────────────────────────────────
+function buildCliente() {
+  killChart('cli1'); killChart('cli2');
+  const d = DATA.clients[curClient]; if (!d) return;
+  const pd = getPeriodData(d).filter(p => p.v25 != null && p.v26 != null);
+  const labels17 = DATA.month_labels || DATA.months;
+  const n2025 = DATA.months.filter(m => m.startsWith('2025')).length;
+
+  const statusCfg = { activo: 'p-activo', nuevo: 'p-nuevo', 'en riesgo': 'p-riesgo', churn: 'p-churn' };
+  const statusLabel = { activo: 'Activo', nuevo: 'Nuevo', 'en riesgo': 'En riesgo', churn: 'Churn' };
+
+  // Selector de clientes
+  const sortedNames = Object.keys(DATA.clients).sort((a, b) => DATA.clients[b].total - DATA.clients[a].total);
+
+  document.getElementById('pane-clientes').innerHTML = `
+    <div style="margin-bottom:10px">
+      <div class="search-wrap" style="margin-bottom:8px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Buscar cliente..." oninput="filterCliChips(this.value)" id="cli-srch">
+      </div>
+      <div id="cli-chips" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <span style="font-size:14px;font-weight:500">${curClient}</span>
+          <span class="pill ${statusCfg[d.status]}">${statusLabel[d.status]}</span>
+        </div>
+        <div style="font-size:11px;color:var(--txt2);margin-bottom:10px">
+          Revenue total: <strong style="color:var(--txt)">${fmt(d.total)}</strong> · ${d.freq}/${DATA.months.length} meses activos
+        </div>
+        ${compCard(d)}
+      </div>
+      <div class="card">
+        <div class="card-title">Períodos comparables 2025 vs 2026</div>
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#85b7eb"></span>2025</span>
+          <span><span class="legend-dot" style="background:#185FA5"></span>2026</span>
+        </div>
+        <div class="chart-wrap" style="height:170px"><canvas id="cli2" role="img" aria-label="Comparación ${curClient}">.</canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Historial completo</div>
+      <div class="chart-wrap" style="height:190px"><canvas id="cli1" role="img" aria-label="Historial ${curClient}">.</canvas></div>
+    </div>`;
+
+  buildCliChips('');
+
+  requestAnimationFrame(() => {
+    const opts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + fmtF(c.raw) } } }, scales: { x: { ticks: { autoSkip: true, maxTicksLimit: 12, font: { size: 9 } }, grid: { display: false } }, y: { ticks: { callback: v => fmt(v), font: { size: 9 } }, grid: { color: 'rgba(128,128,128,.08)' } } } };
+    const ctx1 = document.getElementById('cli1');
+    if (ctx1) charts.cli1 = new Chart(ctx1, { type: 'bar', data: { labels: labels17, datasets: [
+      { data: [...d.vals.slice(0, n2025), ...Array(DATA.months.length - n2025).fill(0)], backgroundColor: '#85b7eb', borderRadius: 3 },
+      { data: [...Array(n2025).fill(0), ...d.vals.slice(n2025)], backgroundColor: '#185FA5', borderRadius: 3 }
+    ]}, options: opts });
+
+    if (pd.length) {
+      const ctx2 = document.getElementById('cli2');
+      if (ctx2) charts.cli2 = new Chart(ctx2, { type: 'bar', data: { labels: pd.map(p => p.lbl), datasets: [
+        { label: '2025', data: pd.map(p => p.v25 || 0), backgroundColor: '#85b7eb', borderRadius: 3 },
+        { label: '2026', data: pd.map(p => p.v26 || 0), backgroundColor: '#185FA5', borderRadius: 3 }
+      ]}, options: opts });
+    }
+  });
+}
+
+function filterCliChips(q) { buildCliChips(q); }
+function buildCliChips(q) {
+  const el = document.getElementById('cli-chips'); if (!el) return;
+  const names = Object.keys(DATA.clients).sort((a, b) => DATA.clients[b].total - DATA.clients[a].total);
+  const f = names.filter(n => n.toLowerCase().includes((q||'').toLowerCase())).slice(0, 28);
+  el.innerHTML = f.map(n => `<button onclick="selCli('${n.replace(/'/g,"\\'")}')"`+
+    ` style="font-size:10px;padding:3px 8px;border-radius:6px;border:0.5px solid var(--border);background:${n===curClient?'var(--bg2)':'none'};color:var(--${n===curClient?'txt':'txt2'});cursor:pointer;font-weight:${n===curClient?500:400}">${n.length>18?n.slice(0,17)+'…':n}</button>`
+  ).join('');
+}
+function selCli(n) { curClient = n; buildCliente(); }
+
+// ── Tab Tabla ──────────────────────────────────────────────────────────────
+function buildTabla() {
+  const clients = Object.entries(DATA.clients).map(([name, d]) => ({ cliente: name, ...d }));
+  const counts = { activo: 0, nuevo: 0, 'en riesgo': 0, churn: 0 };
+  clients.forEach(c => counts[c.status] = (counts[c.status] || 0) + 1);
+
+  document.getElementById('pane-tabla').innerHTML = `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
+      <div class="search-wrap" style="flex:1;min-width:160px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="tbl-srch" placeholder="Buscar cliente..." oninput="renderTabla()">
+      </div>
+      <button class="btn ${tableFilter==='all'?'on':''}" onclick="setTblFilter('all')">Todos (${clients.length})</button>
+      <button class="btn ${tableFilter==='activo'?'on':''}" style="${tableFilter==='activo'?'background:var(--green-light);color:var(--green)':''}" onclick="setTblFilter('activo')">Activos (${counts.activo})</button>
+      <button class="btn ${tableFilter==='nuevo'?'on':''}" style="${tableFilter==='nuevo'?'background:var(--teal-light);color:var(--teal)':''}" onclick="setTblFilter('nuevo')">Nuevos (${counts.nuevo})</button>
+      <button class="btn ${tableFilter==='en riesgo'?'on':''}" style="${tableFilter==='en riesgo'?'background:var(--amber-light);color:var(--amber)':''}" onclick="setTblFilter('en riesgo')">En riesgo (${counts['en riesgo']})</button>
+      <button class="btn ${tableFilter==='churn'?'on':''}" style="${tableFilter==='churn'?'background:var(--red-light);color:var(--red)':''}" onclick="setTblFilter('churn')">Churn (${counts.churn})</button>
+    </div>
+    <div style="font-size:11px;color:var(--txt3);margin-bottom:6px" id="tbl-count"></div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="tbl-wrap">
+        <table>
+          <colgroup>
+            <col style="width:30px"><col style="min-width:170px">
+            <col style="width:80px"><col style="width:80px"><col style="width:80px">
+            <col style="width:70px"><col style="width:65px"><col style="width:65px">
+            <col style="width:75px"><col style="width:75px"><col style="width:75px">
+          </colgroup>
+          <thead><tr>
+            <th class="left" style="width:30px">#</th>
+            <th class="left ${tableSort==='cliente'?'sorted':''}" onclick="setTblSort('cliente')">Cliente ${tableSort==='cliente'?(tableAsc?'↑':'↓'):''}</th>
+            <th class="${tableSort==='total'?'sorted':''}" onclick="setTblSort('total')">Total ${tableSort==='total'?(tableAsc?'↑':'↓'):'↓'}</th>
+            <th class="${tableSort==='ytd25'?'sorted':''}" onclick="setTblSort('ytd25')">Ene–May 25 ${tableSort==='ytd25'?(tableAsc?'↑':'↓'):''}</th>
+            <th class="${tableSort==='ytd26'?'sorted':''}" onclick="setTblSort('ytd26')">Ene–May 26 ${tableSort==='ytd26'?(tableAsc?'↑':'↓'):''}</th>
+            <th class="${tableSort==='ytd_pct'?'sorted':''}" onclick="setTblSort('ytd_pct')">Var YTD ${tableSort==='ytd_pct'?(tableAsc?'↑':'↓'):''}</th>
+            <th class="${tableSort==='freq'?'sorted':''}" onclick="setTblSort('freq')">Meses ${tableSort==='freq'?(tableAsc?'↑':'↓'):''}</th>
+            <th class="${tableSort==='dias'?'sorted':''}" onclick="setTblSort('dias')">Días ${tableSort==='dias'?(tableAsc?'↑':'↓'):''}</th>
+            <th class="${tableSort==='status'?'sorted':''}" onclick="setTblSort('status')">Estado ${tableSort==='status'?(tableAsc?'↑':'↓'):''}</th>
+            <th class="left">Últ. compra</th>
+            <th class="left">1ª compra</th>
+          </tr></thead>
+          <tbody id="tbl-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <p class="note">Activo = compró en últimos 90 días · En riesgo = 90–180 días sin compra · Churn = sin compra en 2026 · Nuevo = solo compras en 2026</p>`;
+
+  renderTabla();
+}
+
+function setTblFilter(f) { tableFilter = f; buildTabla(); }
+function setTblSort(col) {
+  if (tableSort === col) tableAsc = !tableAsc;
+  else { tableSort = col; tableAsc = col === 'cliente' || col === 'status'; }
+  renderTabla();
+}
+
+function renderTabla() {
+  const q = (document.getElementById('tbl-srch')?.value || '').toLowerCase();
+  const allClients = Object.entries(DATA.clients).map(([n, d]) => ({ cliente: n, ...d }));
+  const maxTotal = Math.max(...allClients.map(c => c.total));
+
+  let rows = allClients.filter(c => {
+    const mq = !q || c.cliente.toLowerCase().includes(q);
+    const mf = tableFilter === 'all' || c.status === tableFilter;
+    return mq && mf;
+  });
+
+  rows.sort((a, b) => {
+    let av = a[tableSort], bv = b[tableSort];
+    if (av === null || av === undefined) av = tableAsc ? Infinity : -Infinity;
+    if (bv === null || bv === undefined) bv = tableAsc ? Infinity : -Infinity;
+    if (typeof av === 'string') return tableAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+    return tableAsc ? av - bv : bv - av;
+  });
+
+  document.getElementById('tbl-count').textContent = `Mostrando ${rows.length} de ${allClients.length} clientes`;
+  const sCfg = { activo: ['p-activo','Activo'], nuevo: ['p-nuevo','Nuevo'], 'en riesgo': ['p-riesgo','En riesgo'], churn: ['p-churn','Churn'] };
+
+  document.getElementById('tbl-body').innerHTML = rows.map((r, i) => {
+    const [pillCls, pillLbl] = sCfg[r.status] || sCfg.churn;
+    const bw = Math.round(r.total / maxTotal * 100);
+    return `<tr>
+      <td style="text-align:center;color:var(--txt3);font-size:11px">${i+1}</td>
+      <td><div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px">${r.cliente}</div><div class="mini-bar" style="width:${bw}%"></div></td>
+      <td style="text-align:right;font-weight:500">${fmt(r.total)}</td>
+      <td style="text-align:right;color:var(--txt2)">${r.ytd25 > 0 ? fmt(r.ytd25) : '—'}</td>
+      <td style="text-align:right;color:var(--txt2)">${r.ytd26 > 0 ? fmt(r.ytd26) : '—'}</td>
+      <td style="text-align:right">${r.ytd_pct !== null && r.ytd_pct !== undefined ? `<span class="pct-pill" style="background:${pBg(r.ytd_pct)};color:${pCol(r.ytd_pct)}">${fmtP(r.ytd_pct)}</span>` : '<span style="color:var(--txt3)">s/d</span>'}</td>
+      <td style="text-align:right;color:var(--txt2)">${r.freq}<span style="color:var(--txt3)">/${DATA.months.length}</span></td>
+      <td style="text-align:right;color:${r.dias > 180 ? 'var(--red)' : r.dias > 90 ? 'var(--amber)' : 'var(--txt2)'}">${r.dias < 400 ? r.dias + 'd' : '—'}</td>
+      <td style="text-align:center"><span class="pill ${pillCls}">${pillLbl}</span></td>
+      <td style="font-size:11px;color:var(--txt2)">${fmtM(r.ultima)}</td>
+      <td style="font-size:11px;color:var(--txt3)">${fmtM(r.primera)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Arranque ───────────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
