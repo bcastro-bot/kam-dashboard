@@ -20,10 +20,11 @@ except ImportError:
     sys.exit(1)
 
 # ── Configuración ─────────────────────────────────────────────────────────────
-KAM_CODE    = "BC"
-SHEET_NAME  = "CUADRATURAS"
-REF_DATE    = pd.Timestamp("2026-06-01")
-OUTPUT_FILE = Path("docs/data.json")
+KAM_CODE         = "BC"
+SHEET_NAME       = "CUADRATURAS"
+REF_DATE         = pd.Timestamp("2026-06-01")
+OUTPUT_FILE      = Path("docs/data.json")
+FORECAST_GROWTH  = 1.35   # +35% sobre el mismo mes del año anterior
 
 # Meses reales (histórico)
 HIST_MONTHS = [
@@ -120,7 +121,7 @@ def build_dataset(df):
         forecast_has_data = False
         for m26 in FORECAST_MONTHS:
             m25 = FORECAST_BASE[m26]
-            v = int(vals_dict.get(m25, 0))
+            v = int(vals_dict.get(m25, 0) * FORECAST_GROWTH)
             forecast_vals.append(v)
             if v > 0:
                 forecast_has_data = True
@@ -204,10 +205,10 @@ def build_dataset(df):
     for m in ALL_MONTHS:
         macro_dict[m] = int(monthly[monthly["Mes"] == m]["Precio"].sum()) if m in monthly["Mes"].values else 0
 
-    # Forecast cartera = suma de forecasts individuales
+    # Forecast cartera = suma de H2 2025 × multiplicador de crecimiento
     for m26 in FORECAST_MONTHS:
         m25 = FORECAST_BASE[m26]
-        macro_dict[m26] = int(monthly[monthly["Mes"] == m25]["Precio"].sum())
+        macro_dict[m26] = int(monthly[monthly["Mes"] == m25]["Precio"].sum() * FORECAST_GROWTH)
 
     macro_hist_vals     = [macro_dict.get(m, 0) for m in HIST_MONTHS]
     macro_forecast_vals = [macro_dict.get(m, 0) for m in FORECAST_MONTHS]
@@ -288,4 +289,3 @@ if __name__ == "__main__":
     for s, n in sorted(status_counts.items()):
         print(f"    {s:12s}: {n}")
     print()
-
