@@ -170,7 +170,7 @@ function renderKPIs(){
   document.getElementById('kpis').innerHTML=`
     <div class="kpi"><div class="kl">Revenue histórico</div><div class="kv">${fmt(C.total)}</div><div class="ks">Ene 25 – May 26</div></div>
     <div class="kpi"><div class="kl">YTD vs 2025</div><div class="kv" style="color:${pCol(C.ytd_pct)}">${fmtP(C.ytd_pct)}</div><div class="ks">${fmt(C.ytd25)} → ${fmt(C.ytd26)}</div></div>
-    <div class="kpi" style="background:var(--forecast-l)"><div class="kl" style="color:var(--forecast)">Forecast H2 2026</div><div class="kv" style="color:var(--forecast)">${fmt(C.forecast_total)}</div><div class="ks" style="color:var(--forecast)">Jun–Dic 2026 (= H2 2025)</div></div>
+    <div class="kpi" style="background:var(--forecast-l)"><div class="kl" style="color:var(--forecast)">Forecast H2 2026</div><div class="kv" style="color:var(--forecast)">${fmt(C.forecast_total)}</div><div class="ks" style="color:var(--forecast)">Jun–Dic 2026 (H2 2025 +35%)</div></div>
     <div class="kpi" style="background:var(--green-l)"><div class="kl" style="color:var(--green)">Activos + nuevos</div><div class="kv" style="color:var(--green)">${counts.activo+counts.nuevo}</div><div class="ks" style="color:var(--green)">${Math.round((counts.activo+counts.nuevo)/cv.length*100)}% cartera</div></div>
     <div class="kpi" style="background:var(--amber-l)"><div class="kl" style="color:var(--amber)">En riesgo</div><div class="kv" style="color:var(--amber)">${counts['en riesgo']}</div><div class="ks" style="color:var(--amber)">90–180 días sin compra</div></div>
     <div class="kpi" style="background:var(--red-l)"><div class="kl" style="color:var(--red)">Churn</div><div class="kv" style="color:var(--red)">${counts.churn}</div><div class="ks" style="color:var(--red)">Sin compra en 2026</div></div>`;
@@ -395,14 +395,14 @@ function buildForecast(){
     </div>`;
 
   // H2 2025 vs H2 2026 forecast
-  const h2_25_vals=DATA.cartera.vals.slice(5,12);// Jun–Dic 2025 (idx 5-11 del array 24)
+  const h2_25_vals=DATA.cartera.vals.slice(5,12);// Jun–Dic 2025 real (idx 5-11)
   requestAnimationFrame(()=>{
     const ctx=document.getElementById('fc1');
     if(ctx)charts.fc1=new Chart(ctx,{type:'bar',data:{
       labels:FM,
       datasets:[
-        {label:'H2 2025 real',data:fv,backgroundColor:'#85B7EB',borderRadius:3},
-        {label:'H2 2026 forecast',data:fv,backgroundColor:'rgba(155,89,182,0.7)',borderRadius:3}
+        {label:'H2 2025 real',data:h2_25_vals,backgroundColor:'#85B7EB',borderRadius:3},
+        {label:'H2 2026 forecast (+35%)',data:fv,backgroundColor:'rgba(155,89,182,0.7)',borderRadius:3}
       ]
     },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:c=>' '+fmtF(c.raw)}}},scales:{x:{ticks:{font:{size:10}},grid:{display:false}},y:{ticks:{callback:v=>fmt(v),font:{size:9}},grid:{color:'rgba(128,128,128,.06)'}}}}});
   });
