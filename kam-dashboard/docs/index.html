@@ -429,7 +429,7 @@ function buildTabla(){
     <div class="card" style="padding:0;overflow:hidden">
       <div class="tbl-wrap">
         <table>
-          <colgroup><col style="width:28px"><col style="min-width:160px"><col style="width:78px"><col style="width:78px"><col style="width:78px"><col style="width:68px"><col style="width:78px"><col style="width:62px"><col style="width:62px"><col style="width:72px"><col style="width:72px"><col style="width:72px"></colgroup>
+          <colgroup><col style="width:28px"><col style="min-width:160px"><col style="width:78px"><col style="width:78px"><col style="width:78px"><col style="width:68px"><col style="width:82px"><col style="width:78px"><col style="width:62px"><col style="width:62px"><col style="width:72px"><col style="width:72px"><col style="width:72px"></colgroup>
           <thead><tr>
             <th class="left">#</th>
             <th class="left ${tblSort==='cliente'?'sorted':''}" onclick="setTS('cliente')">Cliente</th>
@@ -437,6 +437,7 @@ function buildTabla(){
             <th class="${tblSort==='ytd25'?'sorted':''}" onclick="setTS('ytd25')">Ene–May 25</th>
             <th class="${tblSort==='ytd26'?'sorted':''}" onclick="setTS('ytd26')">Ene–May 26</th>
             <th class="${tblSort==='ytd_pct'?'sorted':''}" onclick="setTS('ytd_pct')">Var YTD</th>
+            <th class="${tblSort==='avg_2026'?'sorted':''}" onclick="setTS('avg_2026')" style="color:var(--blue-d)">Prom/mes 2026</th>
             <th class="${tblSort==='forecast_total'?'sorted':''}" onclick="setTS('forecast_total')" style="color:var(--forecast)">Forecast H2 26</th>
             <th class="${tblSort==='freq'?'sorted':''}" onclick="setTS('freq')">Meses</th>
             <th class="${tblSort==='dias'?'sorted':''}" onclick="setTS('dias')">Días</th>
@@ -477,6 +478,7 @@ function renderTabla(){
       <td style="text-align:right;color:var(--txt2)">${r.ytd25>0?fmt(r.ytd25):'—'}</td>
       <td style="text-align:right;color:var(--txt2)">${r.ytd26>0?fmt(r.ytd26):'—'}</td>
       <td style="text-align:right">${r.ytd_pct!==null&&r.ytd_pct!==undefined?`<span class="pct-pill" style="background:${pBg(r.ytd_pct)};color:${pCol(r.ytd_pct)}">${fmtP(r.ytd_pct)}</span>`:'<span style="color:var(--txt3)">s/d</span>'}</td>
+      <td style="text-align:right;font-weight:${r.avg_2026>0?500:400};color:${r.avg_2026>0?'var(--blue-d)':'var(--txt3)'}">${r.avg_2026>0?fmt(r.avg_2026):'—'}</td>
       <td style="text-align:right;font-weight:${r.forecast_total>0?500:400};color:${r.forecast_total>0?'var(--forecast)':'var(--txt3)'}">${r.forecast_total>0?fmt(r.forecast_total):'—'}</td>
       <td style="text-align:right;color:var(--txt2)">${r.freq}<span style="color:var(--txt3)">/${DATA.hist_count||17}</span></td>
       <td style="text-align:right;color:${r.dias>180?'var(--red)':r.dias>90?'var(--amber)':'var(--txt2)'}">${r.dias<400?r.dias+'d':'—'}</td>
