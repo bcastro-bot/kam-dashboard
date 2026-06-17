@@ -145,9 +145,9 @@ def build_dataset(df):
         ytd26 = sum(hist_vals[12:17])
         ytd_pct_val = pct(ytd26, ytd25)
 
-        # Promedio mensual año actual (2026): solo meses con compra
-        meses_activos_2026 = [v for v in hist_vals[12:] if v > 0]
-        avg_2026 = int(sum(meses_activos_2026) / len(meses_activos_2026)) if meses_activos_2026 else 0
+        # Promedio mensual año actual (2026): sobre todos los meses transcurridos (incluyendo $0)
+        meses_2026 = hist_vals[12:]   # Ene–May 2026 = 5 meses
+        avg_2026 = int(sum(meses_2026) / len(meses_2026)) if meses_2026 else 0
 
         # Forecast totales
         forecast_total    = sum(forecast_vals)
