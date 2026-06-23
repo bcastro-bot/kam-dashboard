@@ -106,11 +106,13 @@ select{font-size:11px;padding:4px 8px;border:.5px solid var(--border);border-rad
       <button class="tab on" onclick="showTab('cartera')">Cartera</button>
       <button class="tab" onclick="showTab('clientes')">Por cliente</button>
       <button class="tab" onclick="showTab('forecast')">Forecast 2026</button>
+      <button class="tab" onclick="showTab('activos')">Clientes por mes</button>
       <button class="tab" onclick="showTab('tabla')">Tabla completa</button>
     </div>
     <div id="pane-cartera"></div>
     <div id="pane-clientes" style="display:none"></div>
     <div id="pane-forecast" style="display:none"></div>
+    <div id="pane-activos" style="display:none"></div>
     <div id="pane-tabla" style="display:none"></div>
   </div>
 </div>
@@ -154,11 +156,12 @@ function setPeriod(){
 
 function showTab(t){
   curTab=t;
-  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',['cartera','clientes','forecast','tabla'][i]===t));
-  ['cartera','clientes','forecast','tabla'].forEach(id=>document.getElementById('pane-'+id).style.display=id===t?'block':'none');
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',['cartera','clientes','forecast','activos','tabla'][i]===t));
+  ['cartera','clientes','forecast','activos','tabla'].forEach(id=>document.getElementById('pane-'+id).style.display=id===t?'block':'none');
   if(t==='cartera')buildCartera();
   else if(t==='clientes')buildCliente();
   else if(t==='forecast')buildForecast();
+  else if(t==='activos')buildActivos();
   else buildTabla();
 }
 
@@ -487,6 +490,77 @@ function renderTabla(){
       <td style="font-size:11px;color:var(--txt3)">${fmtM(r.primera)}</td>
     </tr>`;
   }).join('');
+}
+
+// ── Tab Clientes por mes ──────────────────────────────────────────────────
+function buildActivos(){
+  const cpm = DATA.clientes_por_mes;
+  if(!cpm){ document.getElementById('pane-activos').innerHTML='<div style="padding:20px;color:var(--txt3)">Sin datos disponibles</div>'; return; }
+  const meses = Object.keys(cpm);
+  const maxCount = Math.max(...meses.map(m=>cpm[m].count));
+  const maxRev = Math.max(...meses.map(m=>cpm[m].revenue));
+  const avg = Math.round(meses.reduce((s,m)=>s+cpm[m].count,0)/meses.length);
+
+  // Separar 2025 y 2026
+  const m2025 = meses.filter(m=>m.startsWith('2025'));
+  const m2026 = meses.filter(m=>m.startsWith('2026'));
+  const avg25 = m2025.length ? Math.round(m2025.reduce((s,m)=>s+cpm[m].count,0)/m2025.length) : 0;
+  const avg26 = m2026.length ? Math.round(m2026.reduce((s,m)=>s+cpm[m].count,0)/m2026.length) : 0;
+
+  document.getElementById('pane-activos').innerHTML=`
+    <div class="kpis" style="margin-bottom:16px">
+      <div class="kpi"><div class="kl">Promedio mensual cartera</div><div class="kv">${avg}</div><div class="ks">clientes activos por mes</div></div>
+      <div class="kpi" style="background:var(--blue-l)"><div class="kl" style="color:var(--blue-d)">Promedio 2025</div><div class="kv" style="color:var(--blue-d)">${avg25}</div><div class="ks" style="color:var(--blue-d)">clientes/mes</div></div>
+      <div class="kpi" style="background:var(--green-l)"><div class="kl" style="color:var(--green)">Promedio 2026</div><div class="kv" style="color:var(--green)">${avg26}</div><div class="ks" style="color:var(--green)">clientes/mes</div></div>
+      <div class="kpi"><div class="kl">Mejor mes</div><div class="kv">${cpm[meses.reduce((a,b)=>cpm[a].count>cpm[b].count?a:b)].count}</div><div class="ks">${cpm[meses.reduce((a,b)=>cpm[a].count>cpm[b].count?a:b)].label}</div></div>
+    </div>
+    <div class="card">
+      <div class="ct">Clientes activos por mes — detalle</div>
+      <div class="tbl-wrap">
+        <table>
+          <colgroup>
+            <col style="width:30px">
+            <col style="width:90px">
+            <col style="min-width:200px">
+            <col style="width:90px">
+            <col style="width:110px">
+            <col style="width:90px">
+          </colgroup>
+          <thead><tr>
+            <th class="left">#</th>
+            <th class="left">Mes</th>
+            <th class="left">Clientes activos</th>
+            <th>Nº clientes</th>
+            <th>Revenue neto</th>
+            <th>Ticket prom.</th>
+          </tr></thead>
+          <tbody>
+            ${meses.map((m,i)=>{
+              const v=cpm[m];
+              const barW=Math.round(v.count/maxCount*100);
+              const is26=m.startsWith('2026');
+              const ticket=v.count>0?Math.round(v.revenue/v.count):0;
+              return`<tr>
+                <td style="text-align:center;color:var(--txt3);font-size:11px">${i+1}</td>
+                <td style="font-weight:500;color:${is26?'var(--blue-d)':'var(--txt2)'}">${v.label}</td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="flex:1;background:var(--bg3);border-radius:3px;height:8px">
+                      <div style="width:${barW}%;background:${is26?'var(--blue-d)':'#85B7EB'};height:8px;border-radius:3px"></div>
+                    </div>
+                    <span style="font-size:11px;color:var(--txt3);white-space:nowrap">${v.count} de ${Object.keys(DATA.clients).length}</span>
+                  </div>
+                </td>
+                <td style="text-align:right;font-size:14px;font-weight:500;color:${is26?'var(--blue-d)':'var(--txt)'}">${v.count}</td>
+                <td style="text-align:right;color:var(--txt2)">${fmt(v.revenue)}</td>
+                <td style="text-align:right;color:var(--txt3)">${fmt(ticket)}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <p class="note" style="margin-top:8px">Activo = cliente con compra neta positiva ese mes (descontando notas de crédito)</p>
+    </div>`;
 }
 
 loadData();
