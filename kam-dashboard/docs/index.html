@@ -168,7 +168,7 @@ function renderKPIs(){
   const counts={activo:0,nuevo:0,'en riesgo':0,churn:0};
   cv.forEach(c=>counts[c.status]=(counts[c.status]||0)+1);
   document.getElementById('kpis').innerHTML=`
-    <div class="kpi"><div class="kl">Revenue histórico</div><div class="kv">${fmt(C.total)}</div><div class="ks">Ene 25 – May 26</div></div>
+    <div class="kpi"><div class="kl">Revenue histórico</div><div class="kv">${fmt(C.total)}</div><div class="ks" id="kpi-rango">Cargando...</div></div>
     <div class="kpi"><div class="kl">YTD vs 2025</div><div class="kv" style="color:${pCol(C.ytd_pct)}">${fmtP(C.ytd_pct)}</div><div class="ks">${fmt(C.ytd25)} → ${fmt(C.ytd26)}</div></div>
     <div class="kpi" style="background:var(--forecast-l)"><div class="kl" style="color:var(--forecast)">Forecast H2 2026</div><div class="kv" style="color:var(--forecast)">${fmt(C.forecast_total)}</div><div class="ks" style="color:var(--forecast)">Jun–Dic 2026 (H2 2025 +35%)</div></div>
     <div class="kpi" style="background:var(--green-l)"><div class="kl" style="color:var(--green)">Activos + nuevos</div><div class="kv" style="color:var(--green)">${counts.activo+counts.nuevo}</div><div class="ks" style="color:var(--green)">${Math.round((counts.activo+counts.nuevo)/cv.length*100)}% cartera</div></div>
@@ -435,7 +435,7 @@ function buildTabla(){
             <th class="left ${tblSort==='cliente'?'sorted':''}" onclick="setTS('cliente')">Cliente</th>
             <th class="${tblSort==='total'?'sorted':''}" onclick="setTS('total')">Total hist.</th>
             <th class="${tblSort==='ytd25'?'sorted':''}" onclick="setTS('ytd25')">Ene–May 25</th>
-            <th class="${tblSort==='ytd26'?'sorted':''}" onclick="setTS('ytd26')">Ene–May 26</th>
+            <th class="${tblSort==='ytd26'?'sorted':''}" onclick="setTS('ytd26')" id="th-ytd26">YTD 2026</th>
             <th class="${tblSort==='ytd_pct'?'sorted':''}" onclick="setTS('ytd_pct')">Var YTD</th>
             <th class="${tblSort==='avg_2026'?'sorted':''}" onclick="setTS('avg_2026')" style="color:var(--blue-d)">Prom/mes 2026</th>
             <th class="${tblSort==='forecast_total'?'sorted':''}" onclick="setTS('forecast_total')" style="color:var(--forecast)">Forecast H2 26</th>
@@ -449,7 +449,7 @@ function buildTabla(){
         </table>
       </div>
     </div>
-    <p class="note">Activo = compró en últimos 90 días · En riesgo = 90–180 días · Churn = sin compra en 2026 · Forecast H2 26 = mismo mes 2025</p>`;
+    <p class="note">Activo = compró en últimos 90 días · En riesgo = 90–180 días · Churn = sin compra en 2026 · Forecast = mismo mes 2025 × 1.35 · Activo = últimos 90 días</p>`;
   renderTabla();
 }
 function setTF(f){tblFilter=f;buildTabla();}
