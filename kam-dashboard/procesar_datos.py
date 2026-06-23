@@ -73,7 +73,7 @@ def load_files(paths):
         for col in ["Precio","Prrecio","precio","PRECIO"]:
             if col in df.columns:
                 df = df.rename(columns={col:"Precio"}); break
-        df = df[df["Precio"] > 0].copy()
+        df = df[df["Precio"] != 0].copy()  # incluir NC (negativos)
         df["Fecha Emision"] = pd.to_datetime(df["Fecha Emision"])
         df["Mes"] = df["Fecha Emision"].dt.to_period("M").astype(str)
         frames.append(df[["Cliente","Precio","Mes"]])
@@ -81,7 +81,7 @@ def load_files(paths):
     if not frames:
         print("ERROR: No se cargó ningún archivo."); sys.exit(1)
     combined = pd.concat(frames, ignore_index=True)
-    combined = combined.drop_duplicates(subset=["Cliente","Mes","Precio"], keep="last")
+    # No hacer drop_duplicates porque las NC tienen precios negativos únicos
     return combined
 
 # ── Dataset ────────────────────────────────────────────────────────────────────
