@@ -1,7 +1,7 @@
 """
-procesar_datos.py — KAM Dashboard BC
-Genera docs/data.json a partir del Excel de ventas.
-Forecast = mismo mes año anterior × FORECAST_GROWTH, solo para meses futuros.
+procesar_datos.py — KAM Dashboard Multi-KAM
+Genera docs/data.json con datos de TODOS los KAMs.
+Forecast = mismo mes año anterior × FORECAST_GROWTH.
 """
 
 import sys
@@ -15,11 +15,18 @@ except ImportError:
     sys.exit(1)
 
 # ── Configuración ──────────────────────────────────────────────────────────────
-KAM_CODE        = "BC"
 SHEET_NAME      = "CUADRATURAS"
 REF_DATE        = pd.Timestamp("2026-07-01")
 OUTPUT_FILE     = Path("docs/data.json")
-FORECAST_GROWTH = 1.35   # +35% sobre mismo mes año anterior
+FORECAST_GROWTH = 1.35
+
+# KAMs válidos (excluir BACK, #N/D, etc.)
+VALID_KAMS = ["BC", "BG", "LJ", "CF", "AA", "DA", "SC", "EC", "SG"]
+
+KAM_NAMES = {
+    "BC": "BC", "BG": "BG", "LJ": "LJ", "CF": "CF",
+    "AA": "AA", "DA": "DA", "SC": "SC", "EC": "EC", "SG": "SG"
+}
 
 ALL_POSSIBLE_MONTHS = [
     "2025-01","2025-02","2025-03","2025-04","2025-05","2025-06",
@@ -38,13 +45,11 @@ MONTH_LABELS = {
     "2026-10":"Oct 26*","2026-11":"Nov 26*","2026-12":"Dic 26*",
 }
 
-# Meses 2026 con base en 2025 para forecast
 FORECAST_BASE = {
     "2026-07":"2025-07","2026-08":"2025-08","2026-09":"2025-09",
     "2026-10":"2025-10","2026-11":"2025-11","2026-12":"2025-12",
 }
 
-# ── Helpers ────────────────────────────────────────────────────────────────────
 def pct(a, b):
     if not b or b == 0: return None
     return round((a - b) / b * 100, 1)
@@ -64,62 +69,50 @@ def load_files(paths):
         print(f"  ✓ Cargando {p.name}...")
         df = pd.read_excel(p, sheet_name=SHEET_NAME)
         df.columns = [c.strip() for c in df.columns]
+
+        # Detectar columna KAM
         if "Kam" in df.columns:
-            df = df[df["Kam"] == KAM_CODE].copy()
+            df = df.rename(columns={"Kam": "KAM"})
         elif "Codigo Vendedor" in df.columns:
-            df = df[df["Codigo Vendedor"] == KAM_CODE].copy()
+            df = df.rename(columns={"Codigo Vendedor": "KAM"})
         else:
             print(f"  ⚠ Sin columna KAM en {p.name}"); continue
+
+        # Detectar columna precio
         for col in ["Precio","Prrecio","precio","PRECIO"]:
             if col in df.columns:
                 df = df.rename(columns={col:"Precio"}); break
-        df = df[df["Precio"] != 0].copy()  # incluir NC (negativos)
+
+        df = df[df["Precio"] != 0].copy()
         df["Fecha Emision"] = pd.to_datetime(df["Fecha Emision"])
         df["Mes"] = df["Fecha Emision"].dt.to_period("M").astype(str)
-        frames.append(df[["Cliente","Precio","Mes"]])
-        print(f"    → {len(df)} registros BC")
+        df = df[df["KAM"].isin(VALID_KAMS)]
+        frames.append(df[["KAM","Cliente","Precio","Mes"]])
+        print(f"    → {len(df)} registros ({df['KAM'].nunique()} KAMs)")
+
     if not frames:
         print("ERROR: No se cargó ningún archivo."); sys.exit(1)
-    combined = pd.concat(frames, ignore_index=True)
-    # No hacer drop_duplicates porque las NC tienen precios negativos únicos
-    return combined
+    return pd.concat(frames, ignore_index=True)
 
-# ── Dataset ────────────────────────────────────────────────────────────────────
-def build_dataset(df):
-    monthly = df.groupby(["Cliente","Mes"])["Precio"].sum().reset_index()
+# ── Dataset por KAM ────────────────────────────────────────────────────────────
+def build_kam_data(df_kam, kam_code):
+    monthly = df_kam.groupby(["Cliente","Mes"])["Precio"].sum().reset_index()
 
-    # Detectar meses reales presentes en los datos
-    real_months_in_data = sorted(monthly["Mes"].unique().tolist())
-    # Solo usar meses que estén en ALL_POSSIBLE_MONTHS y sean datos reales (no forecast)
-    hist_months = [m for m in ALL_POSSIBLE_MONTHS if m in real_months_in_data and m <= "2026-12"]
-    # Meses de forecast: los de 2026 que NO están en los datos reales
-    forecast_months = [m for m in FORECAST_BASE.keys() if m not in real_months_in_data]
-    all_months = hist_months + sorted(forecast_months)
+    real_months = sorted(monthly["Mes"].unique().tolist())
+    hist_months = [m for m in ALL_POSSIBLE_MONTHS if m in real_months]
+    forecast_months = sorted([m for m in FORECAST_BASE if m not in real_months])
+    all_months = hist_months + forecast_months
 
-    print(f"  Meses reales: {hist_months[0]} → {hist_months[-1]} ({len(hist_months)} meses)")
-    print(f"  Meses forecast: {forecast_months}")
-
-    # Meses 2025 y 2026 reales para comparaciones
     months_2025 = [m for m in hist_months if m.startswith("2025")]
-    months_2026_real = [m for m in hist_months if m.startswith("2026")]
-
-    # Pares YoY comparables
-    yoy_pairs = []
-    for m26 in months_2026_real:
-        m25 = "2025-" + m26.split("-")[1]
-        if m25 in months_2025:
-            yoy_pairs.append((m25, m26))
+    months_2026 = [m for m in hist_months if m.startswith("2026")]
+    yoy_pairs = [(f"2025-{m.split('-')[1]}", m) for m in months_2026
+                 if f"2025-{m.split('-')[1]}" in months_2025]
 
     clients = {}
     for client, grp in monthly.groupby("Cliente"):
         vd = dict(zip(grp["Mes"], grp["Precio"]))
-
-        # Histórico real
         hist_vals = [int(vd.get(m, 0)) for m in hist_months]
-
-        # Forecast
-        forecast_vals = [int(vd.get(FORECAST_BASE[m], 0) * FORECAST_GROWTH) for m in sorted(forecast_months)]
-        forecast_has_data = any(v > 0 for v in forecast_vals)
+        forecast_vals = [int(vd.get(FORECAST_BASE[m], 0) * FORECAST_GROWTH) for m in forecast_months]
         all_vals = hist_vals + forecast_vals
 
         total = sum(hist_vals)
@@ -130,33 +123,23 @@ def build_dataset(df):
         days = int((REF_DATE - pd.Timestamp(last_m + "-28")).days) if last_m else 999
 
         rev_2025 = sum(vd.get(m, 0) for m in months_2025)
-        rev_2026 = sum(vd.get(m, 0) for m in months_2026_real)
-
-        # YTD: primeros N meses comparables
+        rev_2026 = sum(vd.get(m, 0) for m in months_2026)
         ytd25 = sum(vd.get(p[0], 0) for p in yoy_pairs)
         ytd26 = sum(vd.get(p[1], 0) for p in yoy_pairs)
-        ytd_pct = pct(ytd26, ytd25)
 
-        # Promedio mensual 2026 real (sobre todos los meses transcurridos, incluyendo $0)
-        vals_2026_real = [int(vd.get(m, 0)) for m in months_2026_real]
-        avg_2026 = int(sum(vals_2026_real) / len(vals_2026_real)) if vals_2026_real else 0
+        vals_2026 = [int(vd.get(m, 0)) for m in months_2026]
+        avg_2026 = int(sum(vals_2026) / len(vals_2026)) if vals_2026 else 0
 
-        # Mensual YoY
         mensual = [{"lbl": fmt_month_short(p[0]), "v25": int(vd.get(p[0],0)),
                     "v26": int(vd.get(p[1],0)), "pct": pct(vd.get(p[1],0), vd.get(p[0],0))}
                    for p in yoy_pairs]
-
-        # Trimestral
         q1_25 = sum(vd.get(m,0) for m in months_2025 if m.endswith(("-01","-02","-03")))
-        q1_26 = sum(vd.get(m,0) for m in months_2026_real if m.endswith(("-01","-02","-03")))
-        trimestral = [{"lbl":"Q1","v25":int(q1_25),"v26":int(q1_26),"pct":pct(q1_26,q1_25)}]
+        q1_26 = sum(vd.get(m,0) for m in months_2026 if m.endswith(("-01","-02","-03")))
 
-        # Status
         last3 = hist_months[-3:]
         has_recent = any(vd.get(m,0) > 0 for m in last3)
         mid = hist_months[max(0,len(hist_months)-7):-3]
         has_mid = any(vd.get(m,0) > 0 for m in mid)
-
         if has_recent:
             status = "nuevo" if not rev_2025 else "activo"
         elif rev_2026 > 0 or has_mid:
@@ -168,30 +151,31 @@ def build_dataset(df):
             "total": total, "freq": freq, "primera": first_m, "ultima": last_m,
             "dias": days, "status": status,
             "rev_2025": int(rev_2025), "rev_2026": int(rev_2026),
-            "ytd25": int(ytd25), "ytd26": int(ytd26), "ytd_pct": ytd_pct,
+            "ytd25": int(ytd25), "ytd26": int(ytd26), "ytd_pct": pct(ytd26, ytd25),
             "avg_2026": avg_2026,
             "vals": all_vals, "hist_count": len(hist_months),
-            "forecast_vals": forecast_vals, "forecast_total": int(sum(forecast_vals)),
-            "forecast_has_data": forecast_has_data,
-            "mensual": mensual, "trimestral": trimestral,
-            "q1_pct": trimestral[0]["pct"],
+            "forecast_vals": [int(vd.get(FORECAST_BASE[m],0)*FORECAST_GROWTH) for m in forecast_months],
+            "forecast_total": int(sum(int(vd.get(FORECAST_BASE[m],0)*FORECAST_GROWTH) for m in forecast_months)),
+            "forecast_has_data": any(vd.get(FORECAST_BASE[m],0)>0 for m in forecast_months),
+            "mensual": mensual,
+            "trimestral": [{"lbl":"Q1","v25":int(q1_25),"v26":int(q1_26),"pct":pct(q1_26,q1_25)}],
+            "q1_pct": pct(q1_26, q1_25),
             "may_pct": next((p["pct"] for p in mensual if p["lbl"]=="May"), None),
         }
 
-    # Cartera
+    # Cartera del KAM
     macro = {}
     for m in hist_months:
         macro[m] = int(monthly[monthly["Mes"]==m]["Precio"].sum())
-    for m in sorted(forecast_months):
+    for m in forecast_months:
         macro[m] = int(monthly[monthly["Mes"]==FORECAST_BASE[m]]["Precio"].sum() * FORECAST_GROWTH)
 
     macro_hist = [macro.get(m,0) for m in hist_months]
-    macro_fc   = [macro.get(m,0) for m in sorted(forecast_months)]
-
+    macro_fc   = [macro.get(m,0) for m in forecast_months]
     ytd_c25 = sum(macro.get(p[0],0) for p in yoy_pairs)
     ytd_c26 = sum(macro.get(p[1],0) for p in yoy_pairs)
     q1_c25  = sum(macro.get(m,0) for m in months_2025 if m.endswith(("-01","-02","-03")))
-    q1_c26  = sum(macro.get(m,0) for m in months_2026_real if m.endswith(("-01","-02","-03")))
+    q1_c26  = sum(macro.get(m,0) for m in months_2026 if m.endswith(("-01","-02","-03")))
 
     cartera = {
         "total": sum(macro_hist),
@@ -208,25 +192,23 @@ def build_dataset(df):
         "may_pct": pct(macro.get("2026-05",0), macro.get("2025-05",0)),
     }
 
-    # Clientes activos por mes (neto positivo)
-    monthly_net = df.groupby(["Cliente","Mes"])["Precio"].sum().reset_index()
+    # Clientes activos por mes
+    monthly_net = df_kam.groupby(["Cliente","Mes"])["Precio"].sum().reset_index()
     monthly_net = monthly_net[monthly_net["Precio"] > 0]
     clientes_por_mes = {}
     for m in hist_months:
-        clientes_m = monthly_net[monthly_net["Mes"]==m]
+        cm = monthly_net[monthly_net["Mes"]==m]
         clientes_por_mes[m] = {
-            "count": int(clientes_m["Cliente"].nunique()),
-            "revenue": int(clientes_m["Precio"].sum()),
+            "count": int(cm["Cliente"].nunique()),
+            "revenue": int(cm["Precio"].sum()),
             "label": MONTH_LABELS.get(m, m)
         }
 
     return {
-        "generated_at": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"),
-        "kam": KAM_CODE,
         "months": all_months,
         "month_labels": [MONTH_LABELS.get(m, m) for m in all_months],
         "hist_count": len(hist_months),
-        "forecast_months": sorted(forecast_months),
+        "forecast_months": forecast_months,
         "cartera": cartera,
         "clients": clients,
         "clientes_por_mes": clientes_por_mes,
@@ -241,25 +223,32 @@ if __name__ == "__main__":
             print("USO: python procesar_datos.py archivo.xlsx"); sys.exit(1)
 
     print(f"\n{'='*52}")
-    print(f"  KAM Dashboard — Procesando datos")
+    print(f"  KAM Dashboard — Multi-KAM")
     print(f"{'='*52}\n")
 
     df = load_files(files)
-    print(f"\n  Registros totales: {len(df)}")
-    print(f"  Clientes únicos:   {df['Cliente'].nunique()}")
+    kams_presentes = [k for k in VALID_KAMS if k in df["KAM"].values]
+    print(f"\n  KAMs encontrados: {kams_presentes}\n")
 
-    data = build_dataset(df)
+    output = {
+        "generated_at": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"),
+        "kams": kams_presentes,
+        "kam_names": {k: KAM_NAMES.get(k,k) for k in kams_presentes},
+    }
+
+    for kam in kams_presentes:
+        df_kam = df[df["KAM"] == kam].copy()
+        print(f"  Procesando {kam}: {df_kam['Cliente'].nunique()} clientes...")
+        output[kam] = build_kam_data(df_kam, kam)
+
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, separators=(",",":"))
+        json.dump(output, f, ensure_ascii=False, separators=(",",":"))
 
     kb = OUTPUT_FILE.stat().st_size / 1024
     print(f"\n  ✓ Generado: {OUTPUT_FILE}  ({kb:.1f} KB)")
-    print(f"  ✓ Clientes: {len(data['clients'])}")
-    print(f"  ✓ Forecast H2 2026: ${data['cartera']['forecast_total']:,.0f} CLP\n")
-    counts = {}
-    for c in data["clients"].values():
-        counts[c["status"]] = counts.get(c["status"],0) + 1
-    for s,n in sorted(counts.items()):
-        print(f"    {s:12s}: {n}")
+    for kam in kams_presentes:
+        total = output[kam]["cartera"]["total"]
+        nclientes = len(output[kam]["clients"])
+        print(f"    {kam}: {nclientes} clientes | ${total:,.0f}")
     print()

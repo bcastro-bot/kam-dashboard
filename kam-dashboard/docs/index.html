@@ -89,6 +89,9 @@ select{font-size:11px;padding:4px 8px;border:.5px solid var(--border);border-rad
     <div class="meta" id="last-update">Cargando...</div>
   </div>
   <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+    <select id="kam-select" onchange="setKAM()" style="font-size:12px;padding:4px 8px;border:.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--txt);font-weight:500">
+      <option value="">Cargando...</option>
+    </select>
     <select id="period-select" onchange="setPeriod()">
       <option value="mensual">Mes a mes (YoY)</option>
       <option value="trimestral">Trimestral (YoY)</option>
@@ -118,7 +121,7 @@ select{font-size:11px;padding:4px 8px;border:.5px solid var(--border);border-rad
 </div>
 
 <script>
-let DATA=null,curPeriod='mensual',curTab='cartera',curClient=null;
+let FULL_DATA=null,DATA=null,curKAM=null,curPeriod='mensual',curTab='cartera',curClient=null;
 let rankSort='total',rankAsc=false,tblFilter='all',tblSort='total',tblAsc=false;
 let charts={};
 
@@ -134,17 +137,31 @@ async function loadData(){
   try{
     const r=await fetch('data.json?v='+Date.now());
     if(!r.ok)throw new Error('No se pudo cargar data.json ('+r.status+')');
-    DATA=await r.json();
+    FULL_DATA=await r.json();
+    // Poblar selector de KAMs
+    const sel=document.getElementById('kam-select');
+    sel.innerHTML=FULL_DATA.kams.map(k=>`<option value="${k}">${k} — ${FULL_DATA[k].clients?Object.keys(FULL_DATA[k].clients).length:0} clientes</option>`).join('');
+    // Seleccionar BC por defecto si existe, si no el primero
+    curKAM=FULL_DATA.kams.includes('BC')?'BC':FULL_DATA.kams[0];
+    sel.value=curKAM;
+    setKAM(false);
     document.getElementById('loading').style.display='none';
     document.getElementById('app').style.display='block';
-    document.getElementById('last-update').textContent='Actualizado: '+(DATA.generated_at||'—');
-    curClient=Object.keys(DATA.clients)[0];
-    renderKPIs();showTab('cartera');
+    document.getElementById('last-update').textContent='Actualizado: '+(FULL_DATA.generated_at||'—');
   }catch(e){
     document.getElementById('loading').style.display='none';
     const eb=document.getElementById('error-box');
     eb.style.display='block';eb.textContent='❌ '+e.message;
   }
+}
+
+function setKAM(rebuild=true){
+  const sel=document.getElementById('kam-select');
+  curKAM=sel?sel.value:curKAM;
+  DATA=FULL_DATA[curKAM];
+  curClient=DATA&&DATA.clients?Object.keys(DATA.clients)[0]:null;
+  if(rebuild){renderKPIs();showTab(curTab);}
+  else{renderKPIs();showTab('cartera');}
 }
 
 function setPeriod(){
