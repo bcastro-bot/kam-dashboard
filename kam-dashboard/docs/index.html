@@ -279,7 +279,7 @@ function buildCliente(){
   const names=Object.keys(DATA.clients).sort((a,b)=>DATA.clients[b].total-DATA.clients[a].total);
 
   // Forecast card
-  const FM=['Jun 26','Jul 26','Ago 26','Sep 26','Oct 26','Nov 26','Dic 26'];
+  const FM=DATA.forecast_months.map(m=>DATA.month_labels[DATA.months.indexOf(m)]||m);
   const fv=d.forecast_vals||[];
   let fcHtml='';
   if(d.forecast_has_data){
@@ -345,7 +345,7 @@ function selCli(n){curClient=n;buildCliente();}
 function buildForecast(){
   kc('fc1');
   const C=DATA.cartera;
-  const FM=['Jun 26','Jul 26','Ago 26','Sep 26','Oct 26','Nov 26','Dic 26'];
+  const FM=DATA.forecast_months.map(m=>DATA.month_labels[DATA.months.indexOf(m)]||m);
   const fv=C.forecast_vals||[];
 
   // Tabla top clientes por forecast
