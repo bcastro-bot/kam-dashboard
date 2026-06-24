@@ -489,6 +489,27 @@ function renderTabla(){
   document.getElementById('tbl-cnt').textContent=`Mostrando ${rows.length} de ${all.length} clientes`;
   const sC={activo:'p-activo',nuevo:'p-nuevo','en riesgo':'p-riesgo',churn:'p-churn'};
   const sL={activo:'Activo',nuevo:'Nuevo','en riesgo':'En riesgo',churn:'Churn'};
+
+  // Calcular totales de las filas visibles
+  const sumTotal    = rows.reduce((s,r)=>s+r.total,0);
+  const sumYtd25    = rows.reduce((s,r)=>s+(r.ytd25||0),0);
+  const sumYtd26    = rows.reduce((s,r)=>s+(r.ytd26||0),0);
+  const sumAvg      = rows.reduce((s,r)=>s+(r.avg_2026||0),0);
+  const sumForecast = rows.reduce((s,r)=>s+(r.forecast_total||0),0);
+  const ytdTotalPct = sumYtd25>0?((sumYtd26-sumYtd25)/sumYtd25*100).toFixed(1):null;
+
+  const filaTotal = `<tr style="background:var(--bg2);border-top:1.5px solid var(--border)">
+    <td></td>
+    <td style="font-size:12px;font-weight:600;color:var(--txt)">TOTAL (${rows.length} clientes)</td>
+    <td style="text-align:right;font-weight:600;color:var(--txt)">${fmtF(sumTotal)}</td>
+    <td style="text-align:right;font-weight:600;color:var(--txt2)">${fmtF(sumYtd25)}</td>
+    <td style="text-align:right;font-weight:600;color:var(--txt2)">${fmtF(sumYtd26)}</td>
+    <td style="text-align:right">${ytdTotalPct!==null?`<span class="pct-pill" style="background:${pBg(parseFloat(ytdTotalPct))};color:${pCol(parseFloat(ytdTotalPct))};font-weight:600">${ytdTotalPct>=0?'+':''}${ytdTotalPct}%</span>`:'—'}</td>
+    <td style="text-align:right;font-weight:600;color:var(--blue-d)">${fmtF(sumAvg)}</td>
+    <td style="text-align:right;font-weight:600;color:var(--forecast)">${fmtF(sumForecast)}</td>
+    <td></td><td></td><td></td><td></td><td></td>
+  </tr>`;
+
   document.getElementById('tbl-body').innerHTML=rows.map((r,i)=>{
     const bw=Math.round(r.total/maxT*100);
     return`<tr>
@@ -506,10 +527,8 @@ function renderTabla(){
       <td style="font-size:11px;color:var(--txt2)">${fmtM(r.ultima)}</td>
       <td style="font-size:11px;color:var(--txt3)">${fmtM(r.primera)}</td>
     </tr>`;
-  }).join('');
+  }).join('') + filaTotal;
 }
-
-// ── Tab Clientes por mes ──────────────────────────────────────────────────
 function buildActivos(){
   const cpm = DATA.clientes_por_mes;
   if(!cpm){ document.getElementById('pane-activos').innerHTML='<div style="padding:20px;color:var(--txt3)">Sin datos disponibles</div>'; return; }
