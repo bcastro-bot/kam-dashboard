@@ -415,7 +415,12 @@ function buildForecast(){
     </div>`;
 
   // H2 2025 vs H2 2026 forecast
-  const h2_25_vals=DATA.cartera.vals.slice(5,12);// Jun–Dic 2025 real (idx 5-11)
+  // H2 2025 real: tomar exactamente los mismos meses base del forecast
+  const h2_25_vals=DATA.forecast_months.map(m=>{
+    const base=m.replace('2026','2025');
+    const idx=DATA.months.indexOf(base);
+    return idx>=0?DATA.cartera.vals[idx]:0;
+  });
   requestAnimationFrame(()=>{
     const ctx=document.getElementById('fc1');
     if(ctx)charts.fc1=new Chart(ctx,{type:'bar',data:{
