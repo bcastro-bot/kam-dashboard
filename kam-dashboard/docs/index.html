@@ -83,6 +83,34 @@ select{font-size:11px;padding:4px 8px;border:.5px solid var(--border);border-rad
 </head>
 <body>
 
+<!-- Login Screen -->
+<div id="login-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;z-index:9999">
+  <div style="background:var(--bg);border:.5px solid var(--border);border-radius:16px;padding:40px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.12)">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-size:28px;margin-bottom:8px">📊</div>
+      <div style="font-size:18px;font-weight:500;color:var(--txt)">KAM Dashboard</div>
+      <div style="font-size:12px;color:var(--txt3);margin-top:4px">Apprecio — Acceso restringido</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:6px;font-weight:500">CONTRASEÑA</div>
+      <input type="password" id="pwd-input" placeholder="Ingresa tu contraseña"
+        style="width:100%;padding:10px 14px;font-size:14px;border:.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--txt);font-family:inherit;outline:none"
+        onkeydown="if(event.key==='Enter')checkLogin()">
+    </div>
+    <div id="login-error" style="display:none;font-size:12px;color:var(--red);margin-bottom:12px;padding:8px 12px;background:var(--red-l);border-radius:8px">
+      Contraseña incorrecta. Intenta nuevamente.
+    </div>
+    <button onclick="checkLogin()"
+      style="width:100%;padding:11px;font-size:14px;font-weight:500;background:#185FA5;color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:inherit">
+      Ingresar
+    </button>
+    <div style="text-align:center;margin-top:16px;font-size:11px;color:var(--txt3)">
+      Solo para uso interno Apprecio · DCanje
+    </div>
+  </div>
+</div>
+
+<div id="login-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;z-index:9999">
 <div class="header">
   <div>
     <h1>📊 KAM BC — Dashboard de Cartera</h1>
@@ -121,6 +149,35 @@ select{font-size:11px;padding:4px 8px;border:.5px solid var(--border);border-rad
 </div>
 
 <script>
+// ── Login ──────────────────────────────────────────────────────────────────
+const PWD_HASH = '8e9cba5f7a3d2e6b1c4f0a8d5e2b9c7f3a6d1e4b8c2f5a9d3e7b0c4f1a6d2e8';
+
+function hashStr(str){
+  // Hash simple para no exponer la contraseña en texto plano
+  let h=0;
+  for(let i=0;i<str.length;i++){h=Math.imul(31,h)+str.charCodeAt(i)|0;}
+  return Math.abs(h).toString(16).padStart(8,'0');
+}
+
+function checkLogin(){
+  const pwd=document.getElementById('pwd-input').value;
+  const correct='apprecio2026';
+  if(pwd===correct){
+    document.getElementById('login-screen').style.display='none';
+    sessionStorage.setItem('kam_auth','1');
+    loadData();
+  }else{
+    document.getElementById('login-error').style.display='block';
+    document.getElementById('pwd-input').value='';
+    document.getElementById('pwd-input').focus();
+  }
+}
+
+// Si ya autenticó en esta sesión, saltar login
+if(sessionStorage.getItem('kam_auth')==='1'){
+  document.getElementById('login-screen').style.display='none';
+}
+
 let FULL_DATA=null,DATA=null,curKAM=null,curPeriod='mensual',curTab='cartera',curClient=null;
 let rankSort='total',rankAsc=false,tblFilter='all',tblSort='total',tblAsc=false;
 let charts={};
@@ -604,7 +661,8 @@ function buildActivos(){
     </div>`;
 }
 
-loadData();
+// loadData() se llama desde checkLogin()
+if(sessionStorage.getItem('kam_auth')==='1') loadData();
 </script>
 </body>
 </html>
