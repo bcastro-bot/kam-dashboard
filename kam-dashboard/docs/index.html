@@ -7,26 +7,70 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 :root{
-  --bg:#fff;--bg2:#f7f6f2;--bg3:#f0efe9;
-  --txt:#1a1917;--txt2:#5f5e5a;--txt3:#888780;
-  --border:rgba(0,0,0,.12);--radius:10px;
-  --blue:#378ADD;--blue-l:#E6F1FB;--blue-d:#185FA5;
-  --green:#3B6D11;--green-l:#EAF3DE;
-  --amber:#854F0B;--amber-l:#FAEEDA;
-  --red:#A32D2D;--red-l:#FCEBEB;
-  --teal:#085041;--teal-l:#E1F5EE;
-  --forecast:#9B59B6;--forecast-l:#F4ECF7;--forecast-b:#D7BDE2;
+  /* Paleta Apprecio */
+  --primary:#FA345E;        /* Rojo coral principal */
+  --primary-l:#FFE6E8;      /* Rosa claro */
+  --lavender:#B2A8E7;       /* Lavanda */
+  --lavender-l:#EEEAF9;     /* Lavanda claro */
+  --teal-a:#45C1AD;         /* Teal secundario */
+  --teal-l:#E0F8F5;         /* Teal claro */
+  --blue-a:#146787;         /* Azul petróleo */
+  --blue-l:#E0F0F5;         /* Azul claro */
+  --green-a:#97E89F;        /* Verde menta */
+  --green-l:#D7FAB6;        /* Verde lima */
+
+  /* Semánticos → mapeados a paleta Apprecio */
+  --bg:#FFFFFF;
+  --bg2:#FAF9FB;
+  --bg3:#F5F3F9;
+  --txt:#1B1B1B;
+  --txt2:#4A4A5A;
+  --txt3:#9090A0;
+  --border:rgba(27,27,27,.12);
+  --radius:10px;
+
+  --blue:#146787;
+  --blue-l:#E0F0F5;
+  --blue-d:#0D4D66;
+
+  --green:#2E7D32;
+  --green-l:#D7FAB6;
+
+  --amber:#B86A00;
+  --amber-l:#FFF3E0;
+
+  --red:#FA345E;
+  --red-l:#FFE6E8;
+
+  --teal:#45C1AD;
+  --teal-l:#E0F8F5;
+
+  --forecast:#B2A8E7;
+  --forecast-l:#EEEAF9;
+  --forecast-b:#B2A8E7;
 }
 @media(prefers-color-scheme:dark){:root{
-  --bg:#1a1917;--bg2:#252422;--bg3:#2c2c2a;
-  --txt:#f0efe9;--txt2:#b4b2a9;--txt3:#5f5e5a;
-  --border:rgba(255,255,255,.1);
-  --blue-l:#0c447c;--blue-d:#85b7eb;
-  --green-l:#27500a;--green:#97c459;
-  --amber-l:#633806;--amber:#ef9f27;
-  --red-l:#791f1f;--red:#f09595;
-  --teal-l:#04342c;--teal:#5dcaa5;
-  --forecast-l:#2d1a3a;--forecast:#ce93d8;--forecast-b:#7b1fa2;
+  --bg:#1B1B1B;
+  --bg2:#242430;
+  --bg3:#1A1A24;
+  --txt:#FFFFFF;
+  --txt2:#B2A8E7;
+  --txt3:#6060A0;
+  --border:rgba(178,168,231,.15);
+  --blue:#45C1AD;
+  --blue-l:#0D3D4A;
+  --blue-d:#45C1AD;
+  --green:#97E89F;
+  --green-l:#1A3A1A;
+  --amber:#FFB74D;
+  --amber-l:#3A2800;
+  --red:#FA345E;
+  --red-l:#3A0A14;
+  --teal:#45C1AD;
+  --teal-l:#0A2E2A;
+  --forecast:#B2A8E7;
+  --forecast-l:#1E1A3A;
+  --forecast-b:#4A3F8A;
 }}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg3);color:var(--txt);font-size:14px}
@@ -37,7 +81,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .main{max-width:1240px;margin:0 auto;padding:18px 14px}
 .tabs{display:flex;border-bottom:.5px solid var(--border);margin-bottom:18px;overflow-x:auto}
 .tab{padding:8px 16px;font-size:12px;background:none;border:none;border-bottom:2px solid transparent;color:var(--txt2);cursor:pointer;white-space:nowrap;font-family:inherit}
-.tab.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:500}
+.tab.on{color:var(--primary);border-bottom-color:var(--primary);font-weight:500}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:18px}
 .kpi{background:var(--bg);border-radius:var(--radius);padding:11px 13px;border:.5px solid var(--border)}
 .kl{font-size:11px;color:var(--txt2);margin-bottom:3px}
@@ -62,7 +106,7 @@ th.left{text-align:left}
 td{font-size:12px;padding:8px;border-bottom:.5px solid var(--border);vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--bg2)}
-.mini-bar{height:3px;border-radius:1px;background:#85b7eb;margin-top:3px}
+.mini-bar{height:3px;border-radius:1px;background:#b2a8e7;margin-top:3px}
 .srch{position:relative}
 .srch input{width:100%;padding:7px 10px 7px 30px;font-size:12px;border:.5px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--txt);font-family:inherit}
 .srch svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--txt3);pointer-events:none}
@@ -83,11 +127,14 @@ select{font-size:11px;padding:4px 8px;border:.5px solid var(--border);border-rad
 
 <!-- ── LOGIN ── -->
 <div id="login-screen">
-  <div style="background:var(--bg);border:.5px solid var(--border);border-radius:16px;padding:40px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.12)">
-    <div style="text-align:center;margin-bottom:28px">
-      <div style="font-size:32px;margin-bottom:8px">📊</div>
-      <div style="font-size:18px;font-weight:500">KAM Dashboard</div>
-      <div style="font-size:12px;color:var(--txt3);margin-top:4px">Apprecio · DCanje — Acceso restringido</div>
+  <div style="background:var(--bg);border-radius:20px;padding:44px 40px;width:100%;max-width:380px;box-shadow:0 16px 48px rgba(250,52,94,.12),0 2px 8px rgba(0,0,0,.08)">
+    <div style="text-align:center;margin-bottom:32px">
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;background:#FA345E;border-radius:16px;margin-bottom:16px">
+        <span style="font-size:24px">◆</span>
+      </div>
+      <div style="font-size:20px;font-weight:600;color:#1B1B1B">KAM Dashboard</div>
+      <div style="font-size:13px;color:#B2A8E7;margin-top:6px;font-weight:500">Apprecio · DCanje</div>
+      <div style="font-size:11px;color:var(--txt3);margin-top:2px">Acceso restringido</div>
     </div>
     <div style="margin-bottom:16px">
       <div style="font-size:11px;color:var(--txt2);margin-bottom:6px;font-weight:500">CONTRASEÑA</div>
@@ -99,7 +146,7 @@ select{font-size:11px;padding:4px 8px;border:.5px solid var(--border);border-rad
       Contraseña incorrecta. Intenta nuevamente.
     </div>
     <button onclick="checkLogin()"
-      style="width:100%;padding:11px;font-size:14px;font-weight:500;background:#185FA5;color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:inherit">
+      style="width:100%;padding:11px;font-size:14px;font-weight:500;background:#146787;color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:inherit">
       Ingresar
     </button>
     <div style="text-align:center;margin-top:16px;font-size:11px;color:var(--txt3)">Solo para uso interno</div>
@@ -110,7 +157,7 @@ select{font-size:11px;padding:4px 8px;border:.5px solid var(--border);border-rad
 <div id="app-wrapper" style="display:none">
   <div class="header">
     <div>
-      <h1>📊 KAM Dashboard — Apprecio</h1>
+      <h1 style="display:flex;align-items:center;gap:8px"><span style="color:#FA345E;font-size:18px">◆</span> KAM Dashboard <span style="color:#B2A8E7;font-weight:400">· Apprecio</span></h1>
       <div class="meta" id="last-update">Cargando...</div>
     </div>
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -269,7 +316,7 @@ function compCard(d){
   return html||'<div style="color:var(--txt3);font-size:12px;padding:8px 0">Sin datos para este período</div>';
 }
 function rowC(l,v,c){return`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:.5px solid var(--border)"><span style="font-size:12px;color:var(--txt2)">${l}</span><span style="font-size:13px;font-weight:500;color:${c}">${v}</span></div>`}
-function chartColors(n,hc){return Array.from({length:n},(_,i)=>i<5?'#85B7EB':i<hc?'#185FA5':'rgba(155,89,182,0.7)');}
+function chartColors(n,hc){return Array.from({length:n},(_,i)=>i<5?'#B2A8E7':i<hc?'#146787':'rgba(250,52,94,0.75)');}
 
 function buildCartera(){
   kc('c1');kc('c2');
@@ -280,7 +327,7 @@ function buildCartera(){
     <div class="g2">
       <div class="card"><div class="ct">Comparación período equivalente</div>${compCard(C)}</div>
       <div class="card"><div class="ct">2025 vs 2026</div>
-        <div class="legend"><span><span class="ld" style="background:#85B7EB"></span>2025</span><span><span class="ld" style="background:#185FA5"></span>2026</span></div>
+        <div class="legend"><span><span class="ld" style="background:#B2A8E7"></span>2025</span><span><span class="ld" style="background:#146787"></span>2026</span></div>
         <div style="position:relative;height:170px"><canvas id="c2"></canvas></div></div>
     </div>
     <div class="card">
@@ -289,9 +336,9 @@ function buildCartera(){
         <span class="forecast-badge">* Forecast = mismo mes 2025 × 1.35</span>
       </div>
       <div class="legend">
-        <span><span class="ld" style="background:#85B7EB"></span>2025</span>
-        <span><span class="ld" style="background:#185FA5"></span>2026 real</span>
-        <span><span class="ld" style="background:rgba(155,89,182,0.7)"></span>2026 forecast</span>
+        <span><span class="ld" style="background:#B2A8E7"></span>2025</span>
+        <span><span class="ld" style="background:#146787"></span>2026 real</span>
+        <span><span class="ld" style="background:rgba(250,52,94,0.75)"></span>2026 forecast</span>
       </div>
       <div style="position:relative;height:210px"><canvas id="c1"></canvas></div>
     </div>`;
@@ -301,8 +348,8 @@ function buildCartera(){
     if(ctx1)charts.c1=new Chart(ctx1,{type:'bar',data:{labels,datasets:[{data:C.vals,backgroundColor:chartColors(C.vals.length,hc),borderRadius:3}]},options:opts});
     if(pd.length){const ctx2=document.getElementById('c2');
       if(ctx2)charts.c2=new Chart(ctx2,{type:'bar',data:{labels:pd.map(p=>p.lbl),datasets:[
-        {label:'2025',data:pd.map(p=>p.v25||0),backgroundColor:'#85B7EB',borderRadius:3},
-        {label:'2026',data:pd.map(p=>p.v26||0),backgroundColor:'#185FA5',borderRadius:3}
+        {label:'2025',data:pd.map(p=>p.v25||0),backgroundColor:'#B2A8E7',borderRadius:3},
+        {label:'2026',data:pd.map(p=>p.v26||0),backgroundColor:'#146787',borderRadius:3}
       ]},options:opts});}
   });
 }
@@ -347,9 +394,9 @@ function buildCliente(){
         <span class="forecast-badge">* = forecast</span>
       </div>
       <div class="legend">
-        <span><span class="ld" style="background:#85B7EB"></span>2025</span>
-        <span><span class="ld" style="background:#185FA5"></span>2026 real</span>
-        <span><span class="ld" style="background:rgba(155,89,182,0.7)"></span>forecast</span>
+        <span><span class="ld" style="background:#B2A8E7"></span>2025</span>
+        <span><span class="ld" style="background:#146787"></span>2026 real</span>
+        <span><span class="ld" style="background:rgba(250,52,94,0.75)"></span>forecast</span>
       </div>
       <div style="position:relative;height:200px"><canvas id="cli1"></canvas></div>
     </div>`;
@@ -414,7 +461,7 @@ function buildForecast(){
               return`<tr>
                 <td style="text-align:center;color:var(--txt3);font-size:11px">${i+1}</td>
                 <td><div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">${d.name}</div>
-                  <div style="height:3px;border-radius:1px;background:var(--forecast-b);margin-top:3px;width:${bw}%"></div></td>
+                  <div style="height:3px;border-radius:1px;background:#FA345E;margin-top:3px;width:${bw}%;opacity:.4"></div></td>
                 <td style="text-align:right;color:var(--txt2)">${fmt(d.total)}</td>
                 ${(d.forecast_vals||[]).map(v=>`<td style="text-align:right;color:var(--forecast);font-weight:${v>0?500:400}">${v>0?fmt(v):'—'}</td>`).join('')}
                 <td style="text-align:right;font-weight:500;color:var(--forecast)">${d.forecast_total>0?fmt(d.forecast_total):'—'}</td>
@@ -428,8 +475,8 @@ function buildForecast(){
   requestAnimationFrame(()=>{
     const ctx=document.getElementById('fc1');
     if(ctx)charts.fc1=new Chart(ctx,{type:'bar',data:{labels:FM,datasets:[
-      {label:'H2 2025 real',data:h2_25_vals,backgroundColor:'#85B7EB',borderRadius:3},
-      {label:'H2 2026 forecast (+35%)',data:fv,backgroundColor:'rgba(155,89,182,0.7)',borderRadius:3}
+      {label:'H2 2025 real',data:h2_25_vals,backgroundColor:'#B2A8E7',borderRadius:3},
+      {label:'H2 2026 forecast (+35%)',data:fv,backgroundColor:'rgba(250,52,94,0.75)',borderRadius:3}
     ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:c=>' '+fmtF(c.raw)}}},scales:{x:{ticks:{font:{size:10}},grid:{display:false}},y:{ticks:{callback:v=>fmt(v),font:{size:9}},grid:{color:'rgba(128,128,128,.06)'}}}}});
   });
 }
@@ -520,7 +567,7 @@ function renderTabla(){
       <td style="text-align:right;color:var(--txt2)">${r.ytd25>0?fmt(r.ytd25):'—'}</td>
       <td style="text-align:right;color:var(--txt2)">${r.ytd26>0?fmt(r.ytd26):'—'}</td>
       <td style="text-align:right">${r.ytd_pct!==null&&r.ytd_pct!==undefined?`<span class="pct-pill" style="background:${pBg(r.ytd_pct)};color:${pCol(r.ytd_pct)}">${fmtP(r.ytd_pct)}</span>`:'<span style="color:var(--txt3)">s/d</span>'}</td>
-      <td style="text-align:right;font-weight:${r.avg_2026>0?500:400};color:${r.avg_2026>0?'var(--blue-d)':'var(--txt3)'}">${r.avg_2026>0?fmt(r.avg_2026):'—'}</td>
+      <td style="text-align:right;font-weight:${r.avg_2026>0?500:400};color:${r.avg_2026>0?'#146787':'var(--txt3)'}">${r.avg_2026>0?fmt(r.avg_2026):'—'}</td>
       <td style="text-align:right;font-weight:${r.forecast_total>0?500:400};color:${r.forecast_total>0?'var(--forecast)':'var(--txt3)'}">${r.forecast_total>0?fmt(r.forecast_total):'—'}</td>
       <td style="text-align:right;color:var(--txt2)">${r.freq}<span style="color:var(--txt3)">/${DATA.hist_count||17}</span></td>
       <td style="text-align:right;color:${r.dias>180?'var(--red)':r.dias>90?'var(--amber)':'var(--txt2)'}">${r.dias<400?r.dias+'d':'—'}</td>
@@ -563,14 +610,14 @@ function buildActivos(){
               const is26=m.startsWith('2026');const ticket=v.count>0?Math.round(v.revenue/v.count):0;
               return`<tr>
                 <td style="text-align:center;color:var(--txt3);font-size:11px">${i+1}</td>
-                <td style="font-weight:500;color:${is26?'var(--blue-d)':'var(--txt2)'}">${v.label}</td>
+                <td style="font-weight:500;color:${is26?'#146787':'var(--txt2)'}">${v.label}</td>
                 <td><div style="display:flex;align-items:center;gap:8px">
                   <div style="flex:1;background:var(--bg3);border-radius:3px;height:8px">
-                    <div style="width:${barW}%;background:${is26?'var(--blue-d)':'#85B7EB'};height:8px;border-radius:3px"></div>
+                    <div style="width:${barW}%;background:${is26?'#146787':'#B2A8E7'};height:8px;border-radius:3px"></div>
                   </div>
                   <span style="font-size:11px;color:var(--txt3);white-space:nowrap">${v.count} de ${Object.keys(DATA.clients).length}</span>
                 </div></td>
-                <td style="text-align:right;font-size:14px;font-weight:500;color:${is26?'var(--blue-d)':'var(--txt)'}">${v.count}</td>
+                <td style="text-align:right;font-size:14px;font-weight:500;color:${is26?'#146787':'var(--txt)'}">${v.count}</td>
                 <td style="text-align:right;color:var(--txt2)">${fmt(v.revenue)}</td>
                 <td style="text-align:right;color:var(--txt3)">${fmt(ticket)}</td>
               </tr>`;
