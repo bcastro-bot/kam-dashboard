@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KAM BC — Dashboard de Cartera</title>
+<title>KAM Dashboard — Apprecio</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-:root {
+:root{
   --bg:#fff;--bg2:#f7f6f2;--bg3:#f0efe9;
   --txt:#1a1917;--txt2:#5f5e5a;--txt3:#888780;
   --border:rgba(0,0,0,.12);--radius:10px;
@@ -15,7 +15,6 @@
   --amber:#854F0B;--amber-l:#FAEEDA;
   --red:#A32D2D;--red-l:#FCEBEB;
   --teal:#085041;--teal-l:#E1F5EE;
-  --purple:#5B3FA6;--purple-l:#EDE9FB;
   --forecast:#9B59B6;--forecast-l:#F4ECF7;--forecast-b:#D7BDE2;
 }
 @media(prefers-color-scheme:dark){:root{
@@ -27,16 +26,16 @@
   --amber-l:#633806;--amber:#ef9f27;
   --red-l:#791f1f;--red:#f09595;
   --teal-l:#04342c;--teal:#5dcaa5;
-  --purple-l:#2d2060;--purple:#b39ddb;
   --forecast-l:#2d1a3a;--forecast:#ce93d8;--forecast-b:#7b1fa2;
 }}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg3);color:var(--txt);font-size:14px}
+#login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;z-index:9999}
 .header{background:var(--bg);border-bottom:.5px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:10px;flex-wrap:wrap}
 .header h1{font-size:15px;font-weight:500}
-.header .meta{font-size:11px;color:var(--txt3)}
+.meta{font-size:11px;color:var(--txt3)}
 .main{max-width:1240px;margin:0 auto;padding:18px 14px}
-.tabs{display:flex;border-bottom:.5px solid var(--border);margin-bottom:18px;overflow-x:auto;gap:0}
+.tabs{display:flex;border-bottom:.5px solid var(--border);margin-bottom:18px;overflow-x:auto}
 .tab{padding:8px 16px;font-size:12px;background:none;border:none;border-bottom:2px solid transparent;color:var(--txt2);cursor:pointer;white-space:nowrap;font-family:inherit}
 .tab.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:500}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:18px}
@@ -53,7 +52,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .p-nuevo{background:var(--teal-l);color:var(--teal)}
 .p-riesgo{background:var(--amber-l);color:var(--amber)}
 .p-churn{background:var(--red-l);color:var(--red)}
-.p-forecast{background:var(--forecast-l);color:var(--forecast)}
 .btn{font-size:11px;padding:4px 11px;border-radius:8px;border:.5px solid var(--border);background:none;color:var(--txt2);cursor:pointer;font-family:inherit}
 .btn.on{background:var(--bg2);color:var(--txt);font-weight:500}
 .tbl-wrap{overflow-x:auto}
@@ -83,13 +81,13 @@ select{font-size:11px;padding:4px 8px;border:.5px solid var(--border);border-rad
 </head>
 <body>
 
-<!-- Login Screen -->
-<div id="login-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;z-index:9999">
+<!-- ── LOGIN ── -->
+<div id="login-screen">
   <div style="background:var(--bg);border:.5px solid var(--border);border-radius:16px;padding:40px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.12)">
     <div style="text-align:center;margin-bottom:28px">
-      <div style="font-size:28px;margin-bottom:8px">📊</div>
-      <div style="font-size:18px;font-weight:500;color:var(--txt)">KAM Dashboard</div>
-      <div style="font-size:12px;color:var(--txt3);margin-top:4px">Apprecio — Acceso restringido</div>
+      <div style="font-size:32px;margin-bottom:8px">📊</div>
+      <div style="font-size:18px;font-weight:500">KAM Dashboard</div>
+      <div style="font-size:12px;color:var(--txt3);margin-top:4px">Apprecio · DCanje — Acceso restringido</div>
     </div>
     <div style="margin-bottom:16px">
       <div style="font-size:11px;color:var(--txt2);margin-bottom:6px;font-weight:500">CONTRASEÑA</div>
@@ -104,82 +102,76 @@ select{font-size:11px;padding:4px 8px;border:.5px solid var(--border);border-rad
       style="width:100%;padding:11px;font-size:14px;font-weight:500;background:#185FA5;color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:inherit">
       Ingresar
     </button>
-    <div style="text-align:center;margin-top:16px;font-size:11px;color:var(--txt3)">
-      Solo para uso interno Apprecio · DCanje
-    </div>
+    <div style="text-align:center;margin-top:16px;font-size:11px;color:var(--txt3)">Solo para uso interno</div>
   </div>
 </div>
 
-<div id="login-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;z-index:9999">
-<div class="header">
-  <div>
-    <h1>📊 KAM BC — Dashboard de Cartera</h1>
-    <div class="meta" id="last-update">Cargando...</div>
-  </div>
-  <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-    <select id="kam-select" onchange="setKAM()" style="font-size:12px;padding:4px 8px;border:.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--txt);font-weight:500">
-      <option value="">Cargando...</option>
-    </select>
-    <select id="period-select" onchange="setPeriod()">
-      <option value="mensual">Mes a mes (YoY)</option>
-      <option value="trimestral">Trimestral (YoY)</option>
-      <option value="ytd">YTD Ene–May</option>
-    </select>
-  </div>
-</div>
-
-<div class="main">
-  <div id="loading">⏳ Cargando datos...</div>
-  <div id="error-box"></div>
-  <div id="app" style="display:none">
-    <div class="kpis" id="kpis"></div>
-    <div class="tabs">
-      <button class="tab on" onclick="showTab('cartera')">Cartera</button>
-      <button class="tab" onclick="showTab('clientes')">Por cliente</button>
-      <button class="tab" onclick="showTab('forecast')">Forecast 2026</button>
-      <button class="tab" onclick="showTab('activos')">Clientes por mes</button>
-      <button class="tab" onclick="showTab('tabla')">Tabla completa</button>
+<!-- ── APP ── -->
+<div id="app-wrapper" style="display:none">
+  <div class="header">
+    <div>
+      <h1>📊 KAM Dashboard — Apprecio</h1>
+      <div class="meta" id="last-update">Cargando...</div>
     </div>
-    <div id="pane-cartera"></div>
-    <div id="pane-clientes" style="display:none"></div>
-    <div id="pane-forecast" style="display:none"></div>
-    <div id="pane-activos" style="display:none"></div>
-    <div id="pane-tabla" style="display:none"></div>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <select id="kam-select" onchange="setKAM()" style="font-size:12px;padding:4px 8px;border:.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--txt);font-weight:500">
+        <option value="">Cargando...</option>
+      </select>
+      <select id="period-select" onchange="setPeriod()">
+        <option value="mensual">Mes a mes (YoY)</option>
+        <option value="trimestral">Trimestral (YoY)</option>
+        <option value="ytd">YTD acumulado</option>
+      </select>
+    </div>
+  </div>
+  <div class="main">
+    <div id="loading">⏳ Cargando datos...</div>
+    <div id="error-box"></div>
+    <div id="app" style="display:none">
+      <div class="kpis" id="kpis"></div>
+      <div class="tabs">
+        <button class="tab on" onclick="showTab('cartera')">Cartera</button>
+        <button class="tab" onclick="showTab('clientes')">Por cliente</button>
+        <button class="tab" onclick="showTab('forecast')">Forecast 2026</button>
+        <button class="tab" onclick="showTab('activos')">Clientes por mes</button>
+        <button class="tab" onclick="showTab('tabla')">Tabla completa</button>
+      </div>
+      <div id="pane-cartera"></div>
+      <div id="pane-clientes" style="display:none"></div>
+      <div id="pane-forecast" style="display:none"></div>
+      <div id="pane-activos" style="display:none"></div>
+      <div id="pane-tabla" style="display:none"></div>
+    </div>
   </div>
 </div>
 
 <script>
 // ── Login ──────────────────────────────────────────────────────────────────
-const PWD_HASH = '8e9cba5f7a3d2e6b1c4f0a8d5e2b9c7f3a6d1e4b8c2f5a9d3e7b0c4f1a6d2e8';
-
-function hashStr(str){
-  // Hash simple para no exponer la contraseña en texto plano
-  let h=0;
-  for(let i=0;i<str.length;i++){h=Math.imul(31,h)+str.charCodeAt(i)|0;}
-  return Math.abs(h).toString(16).padStart(8,'0');
-}
+const CORRECT_PWD = 'apprecio2026';
 
 function checkLogin(){
-  const pwd=document.getElementById('pwd-input').value;
-  const correct='apprecio2026';
-  if(pwd===correct){
-    document.getElementById('login-screen').style.display='none';
+  const pwd = document.getElementById('pwd-input').value;
+  if(pwd === CORRECT_PWD){
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-wrapper').style.display = 'block';
     sessionStorage.setItem('kam_auth','1');
     loadData();
-  }else{
-    document.getElementById('login-error').style.display='block';
-    document.getElementById('pwd-input').value='';
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('pwd-input').value = '';
     document.getElementById('pwd-input').focus();
   }
 }
 
 // Si ya autenticó en esta sesión, saltar login
-if(sessionStorage.getItem('kam_auth')==='1'){
-  document.getElementById('login-screen').style.display='none';
+if(sessionStorage.getItem('kam_auth') === '1'){
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-wrapper').style.display = 'block';
 }
 
+// ── Estado ─────────────────────────────────────────────────────────────────
 let FULL_DATA=null,DATA=null,curKAM=null,curPeriod='mensual',curTab='cartera',curClient=null;
-let rankSort='total',rankAsc=false,tblFilter='all',tblSort='total',tblAsc=false;
+let tblFilter='all',tblSort='total',tblAsc=false;
 let charts={};
 
 const fmt=v=>{if(!v||v===0)return'—';if(v>=1e9)return'$'+(v/1e9).toFixed(1)+'B';if(v>=1e6)return'$'+(v/1e6).toFixed(1)+'M';if(v>=1e3)return'$'+(v/1e3).toFixed(0)+'K';return'$'+Math.round(v).toLocaleString('es-CL')};
@@ -190,15 +182,14 @@ const pBg=v=>v===null?'transparent':v>=20?'var(--green-l)':v>=-10?'var(--blue-l)
 const fmtM=m=>{if(!m)return'—';const[y,mo]=m.split('-');const n=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return n[+mo]+' '+y.slice(2)};
 const kc=id=>{if(charts[id]){charts[id].destroy();delete charts[id]}};
 
+// ── Carga ──────────────────────────────────────────────────────────────────
 async function loadData(){
   try{
     const r=await fetch('data.json?v='+Date.now());
-    if(!r.ok)throw new Error('No se pudo cargar data.json ('+r.status+')');
+    if(!r.ok) throw new Error('No se pudo cargar data.json ('+r.status+')');
     FULL_DATA=await r.json();
-    // Poblar selector de KAMs
     const sel=document.getElementById('kam-select');
-    sel.innerHTML=FULL_DATA.kams.map(k=>`<option value="${k}">${k} — ${FULL_DATA[k].clients?Object.keys(FULL_DATA[k].clients).length:0} clientes</option>`).join('');
-    // Seleccionar BC por defecto si existe, si no el primero
+    sel.innerHTML=FULL_DATA.kams.map(k=>`<option value="${k}">${k} — ${Object.keys(FULL_DATA[k].clients||{}).length} clientes</option>`).join('');
     curKAM=FULL_DATA.kams.includes('BC')?'BC':FULL_DATA.kams[0];
     sel.value=curKAM;
     setKAM(false);
@@ -208,7 +199,8 @@ async function loadData(){
   }catch(e){
     document.getElementById('loading').style.display='none';
     const eb=document.getElementById('error-box');
-    eb.style.display='block';eb.textContent='❌ '+e.message;
+    eb.style.display='block';
+    eb.textContent='❌ '+e.message;
   }
 }
 
@@ -244,28 +236,29 @@ function renderKPIs(){
   const cv=Object.values(DATA.clients);
   const counts={activo:0,nuevo:0,'en riesgo':0,churn:0};
   cv.forEach(c=>counts[c.status]=(counts[c.status]||0)+1);
+  const firstLabel=DATA.month_labels[0]||'Ene 25';
+  const lastLabel=DATA.month_labels[DATA.hist_count-1]||'—';
   document.getElementById('kpis').innerHTML=`
-    <div class="kpi"><div class="kl">Revenue histórico</div><div class="kv">${fmt(C.total)}</div><div class="ks" id="kpi-rango">Cargando...</div></div>
+    <div class="kpi"><div class="kl">Revenue histórico</div><div class="kv">${fmt(C.total)}</div><div class="ks">${firstLabel} – ${lastLabel}</div></div>
     <div class="kpi"><div class="kl">YTD vs 2025</div><div class="kv" style="color:${pCol(C.ytd_pct)}">${fmtP(C.ytd_pct)}</div><div class="ks">${fmt(C.ytd25)} → ${fmt(C.ytd26)}</div></div>
-    <div class="kpi" style="background:var(--forecast-l)"><div class="kl" style="color:var(--forecast)">Forecast H2 2026</div><div class="kv" style="color:var(--forecast)">${fmt(C.forecast_total)}</div><div class="ks" style="color:var(--forecast)">Jun–Dic 2026 (H2 2025 +35%)</div></div>
+    <div class="kpi" style="background:var(--forecast-l)"><div class="kl" style="color:var(--forecast)">Forecast H2 2026</div><div class="kv" style="color:var(--forecast)">${fmt(C.forecast_total)}</div><div class="ks" style="color:var(--forecast)">H2 2025 × 1.35</div></div>
     <div class="kpi" style="background:var(--green-l)"><div class="kl" style="color:var(--green)">Activos + nuevos</div><div class="kv" style="color:var(--green)">${counts.activo+counts.nuevo}</div><div class="ks" style="color:var(--green)">${Math.round((counts.activo+counts.nuevo)/cv.length*100)}% cartera</div></div>
     <div class="kpi" style="background:var(--amber-l)"><div class="kl" style="color:var(--amber)">En riesgo</div><div class="kv" style="color:var(--amber)">${counts['en riesgo']}</div><div class="ks" style="color:var(--amber)">90–180 días sin compra</div></div>
     <div class="kpi" style="background:var(--red-l)"><div class="kl" style="color:var(--red)">Churn</div><div class="kv" style="color:var(--red)">${counts.churn}</div><div class="ks" style="color:var(--red)">Sin compra en 2026</div></div>`;
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
 function getPD(d){
   if(curPeriod==='mensual')return d.mensual||[];
   if(curPeriod==='trimestral')return d.trimestral||[];
-  return[{lbl:'Ene–May 25',v25:d.ytd25,v26:null,pct:null},{lbl:'Ene–May 26',v25:null,v26:d.ytd26,pct:d.ytd_pct}];
+  return[{lbl:'Ene–May 25',v25:d.ytd25,v26:null,pct:null},{lbl:'YTD 2026',v25:null,v26:d.ytd26,pct:d.ytd_pct}];
 }
 function compCard(d){
   const pd=getPD(d);let html='';
   pd.forEach(p=>{
     if(curPeriod==='ytd'){
-      if(p.v25)html+=rowC('Ene–May 2025',fmtF(p.v25),'var(--txt2)');
-      if(p.v26)html+=rowC('Ene–May 2026',fmtF(p.v26),'var(--txt)');
-      if(p.pct!==null&&p.pct!==undefined)html+=rowC('Variación YTD',fmtP(p.pct),pCol(p.pct));
+      if(p.v25)html+=rowC('Período base 2025',fmtF(p.v25),'var(--txt2)');
+      if(p.v26)html+=rowC('YTD 2026',fmtF(p.v26),'var(--txt)');
+      if(p.pct!==null&&p.pct!==undefined)html+=rowC('Variación',fmtP(p.pct),pCol(p.pct));
     }else if(p.v25!==null||p.v26!==null){
       const pill=p.pct!==null?`<span class="pct-pill" style="background:${pBg(p.pct)};color:${pCol(p.pct)}">${fmtP(p.pct)}</span>`:'<span style="color:var(--txt3)">s/d</span>';
       html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:.5px solid var(--border)">
@@ -276,31 +269,24 @@ function compCard(d){
   return html||'<div style="color:var(--txt3);font-size:12px;padding:8px 0">Sin datos para este período</div>';
 }
 function rowC(l,v,c){return`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:.5px solid var(--border)"><span style="font-size:12px;color:var(--txt2)">${l}</span><span style="font-size:13px;font-weight:500;color:${c}">${v}</span></div>`}
+function chartColors(n,hc){return Array.from({length:n},(_,i)=>i<5?'#85B7EB':i<hc?'#185FA5':'rgba(155,89,182,0.7)');}
 
-function chartColors(n,hc){
-  // n = total vals, hc = hist_count
-  return Array.from({length:n},(_,i)=>i<5?'#85B7EB':i<hc?'#185FA5':'rgba(155,89,182,0.7)');
-}
-
-// ── Tab Cartera ────────────────────────────────────────────────────────────
 function buildCartera(){
   kc('c1');kc('c2');
-  const C=DATA.cartera;
-  const hc=DATA.hist_count||17;
+  const C=DATA.cartera;const hc=DATA.hist_count||17;
   const labels=DATA.month_labels||DATA.months;
   const pd=getPD(C).filter(p=>p.v25&&p.v26);
-
   document.getElementById('pane-cartera').innerHTML=`
     <div class="g2">
       <div class="card"><div class="ct">Comparación período equivalente</div>${compCard(C)}</div>
-      <div class="card"><div class="ct">2025 vs 2026 — períodos comparables</div>
+      <div class="card"><div class="ct">2025 vs 2026</div>
         <div class="legend"><span><span class="ld" style="background:#85B7EB"></span>2025</span><span><span class="ld" style="background:#185FA5"></span>2026</span></div>
         <div style="position:relative;height:170px"><canvas id="c2"></canvas></div></div>
     </div>
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px">
-        <div class="ct" style="margin:0">Historial + Forecast — Ene 2025 a Dic 2026</div>
-        <span class="forecast-badge">* Forecast Jun–Dic 26 = mismo mes 2025</span>
+        <div class="ct" style="margin:0">Historial + Forecast</div>
+        <span class="forecast-badge">* Forecast = mismo mes 2025 × 1.35</span>
       </div>
       <div class="legend">
         <span><span class="ld" style="background:#85B7EB"></span>2025</span>
@@ -309,47 +295,35 @@ function buildCartera(){
       </div>
       <div style="position:relative;height:210px"><canvas id="c1"></canvas></div>
     </div>`;
-
   requestAnimationFrame(()=>{
     const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fmtF(c.raw)}}},scales:{x:{ticks:{autoSkip:true,maxTicksLimit:12,font:{size:9}},grid:{display:false}},y:{ticks:{callback:v=>fmt(v),font:{size:9}},grid:{color:'rgba(128,128,128,.06)'}}}};
     const ctx1=document.getElementById('c1');
     if(ctx1)charts.c1=new Chart(ctx1,{type:'bar',data:{labels,datasets:[{data:C.vals,backgroundColor:chartColors(C.vals.length,hc),borderRadius:3}]},options:opts});
-    if(pd.length){
-      const ctx2=document.getElementById('c2');
+    if(pd.length){const ctx2=document.getElementById('c2');
       if(ctx2)charts.c2=new Chart(ctx2,{type:'bar',data:{labels:pd.map(p=>p.lbl),datasets:[
         {label:'2025',data:pd.map(p=>p.v25||0),backgroundColor:'#85B7EB',borderRadius:3},
         {label:'2026',data:pd.map(p=>p.v26||0),backgroundColor:'#185FA5',borderRadius:3}
-      ]},options:opts});
-    }
+      ]},options:opts});}
   });
 }
 
-// ── Tab Cliente ────────────────────────────────────────────────────────────
 function buildCliente(){
-  kc('cli1');kc('cli2');
+  kc('cli1');
   const d=DATA.clients[curClient];if(!d)return;
   const hc=d.hist_count||DATA.hist_count||17;
   const labels=DATA.month_labels||DATA.months;
-  const pd=getPD(d).filter(p=>p.v25!=null&&p.v26!=null);
   const sCfg={activo:'p-activo',nuevo:'p-nuevo','en riesgo':'p-riesgo',churn:'p-churn'};
   const sLbl={activo:'Activo',nuevo:'Nuevo','en riesgo':'En riesgo',churn:'Churn'};
-  const names=Object.keys(DATA.clients).sort((a,b)=>DATA.clients[b].total-DATA.clients[a].total);
-
-  // Forecast card
   const FM=DATA.forecast_months.map(m=>DATA.month_labels[DATA.months.indexOf(m)]||m);
   const fv=d.forecast_vals||[];
-  let fcHtml='';
-  if(d.forecast_has_data){
-    fv.forEach((v,i)=>{fcHtml+=`<div class="forecast-row"><span style="font-size:12px;color:var(--txt2)">${FM[i]}</span><span style="font-size:13px;font-weight:500;color:var(--forecast)">${v>0?fmtF(v):'—'}</span></div>`;});
-    fcHtml+=`<div style="display:flex;justify-content:space-between;padding:8px 0;margin-top:4px;border-top:.5px solid var(--forecast-b)"><span style="font-size:12px;font-weight:500;color:var(--forecast)">Total H2 2026</span><span style="font-size:14px;font-weight:500;color:var(--forecast)">${fmtF(d.forecast_total)}</span></div>`;
-  }else{
-    fcHtml='<div style="color:var(--txt3);font-size:12px;padding:8px 0">Sin compras en H2 2025 → forecast $0</div>';
-  }
-
+  let fcHtml=d.forecast_has_data
+    ? fv.map((v,i)=>`<div class="forecast-row"><span style="font-size:12px;color:var(--txt2)">${FM[i]}</span><span style="font-size:13px;font-weight:500;color:var(--forecast)">${v>0?fmtF(v):'—'}</span></div>`).join('')+
+      `<div style="display:flex;justify-content:space-between;padding:8px 0;margin-top:4px;border-top:.5px solid var(--forecast-b)"><span style="font-weight:500;color:var(--forecast)">Total H2 2026</span><span style="font-size:14px;font-weight:500;color:var(--forecast)">${fmtF(d.forecast_total)}</span></div>`
+    : '<div style="color:var(--txt3);font-size:12px;padding:8px 0">Sin historial H2 2025 → forecast $0</div>';
   document.getElementById('pane-clientes').innerHTML=`
     <div class="srch" style="margin-bottom:8px">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input type="text" placeholder="Buscar cliente..." oninput="filterCliChips(this.value)" id="cli-srch">
+      <input type="text" placeholder="Buscar cliente..." oninput="filterCliChips(this.value)">
     </div>
     <div id="cli-chips" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px"></div>
     <div class="g2" style="margin-bottom:10px">
@@ -358,28 +332,27 @@ function buildCliente(){
           <span style="font-size:14px;font-weight:500">${curClient}</span>
           <span class="pill ${sCfg[d.status]}">${sLbl[d.status]}</span>
         </div>
-        <div style="font-size:11px;color:var(--txt2);margin-bottom:8px">Revenue total: <strong style="color:var(--txt)">${fmt(d.total)}</strong> · ${d.freq}/${hc} meses activos</div>
+        <div style="font-size:11px;color:var(--txt2);margin-bottom:8px">Revenue total: <strong>${fmt(d.total)}</strong> · ${d.freq}/${hc} meses activos</div>
         ${compCard(d)}
       </div>
       <div class="forecast-box">
-        <div class="ct" style="color:var(--forecast)">📈 Forecast Jun–Dic 2026</div>
-        <div style="font-size:11px;color:var(--forecast);margin-bottom:10px;opacity:.8">Basado en lo que compró en el mismo mes de 2025</div>
+        <div class="ct" style="color:var(--forecast)">📈 Forecast Jul–Dic 2026</div>
+        <div style="font-size:11px;color:var(--forecast);margin-bottom:10px;opacity:.8">Mismo mes 2025 × 1.35</div>
         ${fcHtml}
       </div>
     </div>
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:4px">
         <div class="ct" style="margin:0">Historial + Forecast</div>
-        <span class="forecast-badge">* Forecast = mismo mes 2025</span>
+        <span class="forecast-badge">* = forecast</span>
       </div>
       <div class="legend">
         <span><span class="ld" style="background:#85B7EB"></span>2025</span>
         <span><span class="ld" style="background:#185FA5"></span>2026 real</span>
-        <span><span class="ld" style="background:rgba(155,89,182,0.7)"></span>2026 forecast</span>
+        <span><span class="ld" style="background:rgba(155,89,182,0.7)"></span>forecast</span>
       </div>
       <div style="position:relative;height:200px"><canvas id="cli1"></canvas></div>
     </div>`;
-
   buildCliChips('');
   requestAnimationFrame(()=>{
     const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fmtF(c.raw)}}},scales:{x:{ticks:{autoSkip:true,maxTicksLimit:12,font:{size:9}},grid:{display:false}},y:{ticks:{callback:v=>fmt(v),font:{size:9}},grid:{color:'rgba(128,128,128,.06)'}}}};
@@ -398,21 +371,14 @@ function buildCliChips(q){
 }
 function selCli(n){curClient=n;buildCliente();}
 
-// ── Tab Forecast ───────────────────────────────────────────────────────────
 function buildForecast(){
   kc('fc1');
   const C=DATA.cartera;
   const FM=DATA.forecast_months.map(m=>DATA.month_labels[DATA.months.indexOf(m)]||m);
   const fv=C.forecast_vals||[];
-
-  // Tabla top clientes por forecast
-  const clientsArr=Object.entries(DATA.clients)
-    .map(([name,d])=>({name,...d}))
-    .filter(d=>d.forecast_total>0)
-    .sort((a,b)=>b.forecast_total-a.forecast_total);
-
+  const clientsArr=Object.entries(DATA.clients).map(([name,d])=>({name,...d})).filter(d=>d.forecast_total>0).sort((a,b)=>b.forecast_total-a.forecast_total);
   const maxFT=clientsArr[0]?.forecast_total||1;
-
+  const h2_25_vals=DATA.forecast_months.map(m=>{const base=m.replace('2026','2025');const idx=DATA.months.indexOf(base);return idx>=0?DATA.cartera.vals[idx]:0;});
   document.getElementById('pane-forecast').innerHTML=`
     <div class="g2" style="margin-bottom:12px">
       <div class="card">
@@ -421,7 +387,7 @@ function buildForecast(){
           <span style="font-size:12px;color:var(--txt2)">${m}</span>
           <div style="text-align:right">
             <span style="font-size:13px;font-weight:500;color:var(--forecast)">${fv[i]>0?fmtF(fv[i]):'—'}</span>
-            <span style="font-size:10px;color:var(--txt3);margin-left:8px">= ${['Jun','Jul','Ago','Sep','Oct','Nov','Dic'][i]} 2025</span>
+            <span style="font-size:10px;color:var(--txt3);margin-left:8px">= ${['Jul','Ago','Sep','Oct','Nov','Dic'][i]} 2025 ×1.35</span>
           </div></div>`).join('')}
         <div style="display:flex;justify-content:space-between;padding:10px 0 4px;border-top:.5px solid var(--forecast-b);margin-top:4px">
           <span style="font-size:13px;font-weight:500;color:var(--forecast)">Total H2 2026</span>
@@ -429,37 +395,26 @@ function buildForecast(){
         </div>
       </div>
       <div class="card">
-        <div class="ct">Comparativa H2 2025 vs Forecast H2 2026</div>
+        <div class="ct">H2 2025 real vs Forecast H2 2026</div>
         <div style="position:relative;height:220px"><canvas id="fc1"></canvas></div>
       </div>
     </div>
-
     <div class="card">
-      <div class="ct">Forecast por cliente — Top ${Math.min(clientsArr.length,50)} (ordenado por forecast total)</div>
+      <div class="ct">Forecast por cliente — Top ${Math.min(clientsArr.length,50)}</div>
       <div class="tbl-wrap">
         <table>
-          <colgroup>
-            <col style="width:28px"><col style="min-width:160px">
-            <col style="width:75px">
-            ${FM.map(()=>'<col style="width:70px">').join('')}
-            <col style="width:80px">
-          </colgroup>
+          <colgroup><col style="width:28px"><col style="min-width:160px"><col style="width:75px">${FM.map(()=>'<col style="width:70px">').join('')}<col style="width:80px"></colgroup>
           <thead><tr>
-            <th class="left">#</th>
-            <th class="left">Cliente</th>
-            <th>Total hist.</th>
-            ${FM.map(m=>`<th>${m}</th>`).join('')}
-            <th>Total H2 26</th>
+            <th class="left">#</th><th class="left">Cliente</th><th>Total hist.</th>
+            ${FM.map(m=>`<th>${m}</th>`).join('')}<th>Total H2</th>
           </tr></thead>
           <tbody>
             ${clientsArr.slice(0,50).map((d,i)=>{
               const bw=Math.round(d.forecast_total/maxFT*100);
               return`<tr>
                 <td style="text-align:center;color:var(--txt3);font-size:11px">${i+1}</td>
-                <td>
-                  <div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">${d.name}</div>
-                  <div style="height:3px;border-radius:1px;background:var(--forecast-b);margin-top:3px;width:${bw}%"></div>
-                </td>
+                <td><div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">${d.name}</div>
+                  <div style="height:3px;border-radius:1px;background:var(--forecast-b);margin-top:3px;width:${bw}%"></div></td>
                 <td style="text-align:right;color:var(--txt2)">${fmt(d.total)}</td>
                 ${(d.forecast_vals||[]).map(v=>`<td style="text-align:right;color:var(--forecast);font-weight:${v>0?500:400}">${v>0?fmt(v):'—'}</td>`).join('')}
                 <td style="text-align:right;font-weight:500;color:var(--forecast)">${d.forecast_total>0?fmt(d.forecast_total):'—'}</td>
@@ -468,29 +423,17 @@ function buildForecast(){
           </tbody>
         </table>
       </div>
-      <p class="note">Forecast = exactamente lo que compró el mismo mes en 2025. Clientes nuevos en 2026 sin historial 2025 no aparecen.</p>
+      <p class="note">Forecast = mismo mes 2025 × 1.35</p>
     </div>`;
-
-  // H2 2025 vs H2 2026 forecast
-  // H2 2025 real: tomar exactamente los mismos meses base del forecast
-  const h2_25_vals=DATA.forecast_months.map(m=>{
-    const base=m.replace('2026','2025');
-    const idx=DATA.months.indexOf(base);
-    return idx>=0?DATA.cartera.vals[idx]:0;
-  });
   requestAnimationFrame(()=>{
     const ctx=document.getElementById('fc1');
-    if(ctx)charts.fc1=new Chart(ctx,{type:'bar',data:{
-      labels:FM,
-      datasets:[
-        {label:'H2 2025 real',data:h2_25_vals,backgroundColor:'#85B7EB',borderRadius:3},
-        {label:'H2 2026 forecast (+35%)',data:fv,backgroundColor:'rgba(155,89,182,0.7)',borderRadius:3}
-      ]
-    },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:c=>' '+fmtF(c.raw)}}},scales:{x:{ticks:{font:{size:10}},grid:{display:false}},y:{ticks:{callback:v=>fmt(v),font:{size:9}},grid:{color:'rgba(128,128,128,.06)'}}}}});
+    if(ctx)charts.fc1=new Chart(ctx,{type:'bar',data:{labels:FM,datasets:[
+      {label:'H2 2025 real',data:h2_25_vals,backgroundColor:'#85B7EB',borderRadius:3},
+      {label:'H2 2026 forecast (+35%)',data:fv,backgroundColor:'rgba(155,89,182,0.7)',borderRadius:3}
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:c=>' '+fmtF(c.raw)}}},scales:{x:{ticks:{font:{size:10}},grid:{display:false}},y:{ticks:{callback:v=>fmt(v),font:{size:9}},grid:{color:'rgba(128,128,128,.06)'}}}}});
   });
 }
 
-// ── Tab Tabla ──────────────────────────────────────────────────────────────
 function buildTabla(){
   const cv=Object.entries(DATA.clients).map(([n,d])=>({cliente:n,...d}));
   const counts={activo:0,nuevo:0,'en riesgo':0,churn:0};
@@ -502,10 +445,10 @@ function buildTabla(){
         <input type="text" id="tbl-srch" placeholder="Buscar..." oninput="renderTabla()">
       </div>
       <button class="btn ${tblFilter==='all'?'on':''}" onclick="setTF('all')">Todos (${cv.length})</button>
-      <button class="btn ${tblFilter==='activo'?'on':''}" style="${tblFilter==='activo'?'background:var(--green-l);color:var(--green)':''}" onclick="setTF('activo')">Activos (${counts.activo})</button>
-      <button class="btn ${tblFilter==='nuevo'?'on':''}" style="${tblFilter==='nuevo'?'background:var(--teal-l);color:var(--teal)':''}" onclick="setTF('nuevo')">Nuevos (${counts.nuevo})</button>
-      <button class="btn ${tblFilter==='en riesgo'?'on':''}" style="${tblFilter==='en riesgo'?'background:var(--amber-l);color:var(--amber)':''}" onclick="setTF('en riesgo')">En riesgo (${counts['en riesgo']})</button>
-      <button class="btn ${tblFilter==='churn'?'on':''}" style="${tblFilter==='churn'?'background:var(--red-l);color:var(--red)':''}" onclick="setTF('churn')">Churn (${counts.churn})</button>
+      <button class="btn" style="${tblFilter==='activo'?'background:var(--green-l);color:var(--green)':''}" onclick="setTF('activo')">Activos (${counts.activo})</button>
+      <button class="btn" style="${tblFilter==='nuevo'?'background:var(--teal-l);color:var(--teal)':''}" onclick="setTF('nuevo')">Nuevos (${counts.nuevo})</button>
+      <button class="btn" style="${tblFilter==='en riesgo'?'background:var(--amber-l);color:var(--amber)':''}" onclick="setTF('en riesgo')">En riesgo (${counts['en riesgo']})</button>
+      <button class="btn" style="${tblFilter==='churn'?'background:var(--red-l);color:var(--red)':''}" onclick="setTF('churn')">Churn (${counts.churn})</button>
     </div>
     <div style="font-size:11px;color:var(--txt3);margin-bottom:6px" id="tbl-cnt"></div>
     <div class="card" style="padding:0;overflow:hidden">
@@ -516,11 +459,11 @@ function buildTabla(){
             <th class="left">#</th>
             <th class="left ${tblSort==='cliente'?'sorted':''}" onclick="setTS('cliente')">Cliente</th>
             <th class="${tblSort==='total'?'sorted':''}" onclick="setTS('total')">Total hist.</th>
-            <th class="${tblSort==='ytd25'?'sorted':''}" onclick="setTS('ytd25')">Ene–May 25</th>
-            <th class="${tblSort==='ytd26'?'sorted':''}" onclick="setTS('ytd26')" id="th-ytd26">YTD 2026</th>
+            <th class="${tblSort==='ytd25'?'sorted':''}" onclick="setTS('ytd25')">YTD 2025</th>
+            <th class="${tblSort==='ytd26'?'sorted':''}" onclick="setTS('ytd26')">YTD 2026</th>
             <th class="${tblSort==='ytd_pct'?'sorted':''}" onclick="setTS('ytd_pct')">Var YTD</th>
             <th class="${tblSort==='avg_2026'?'sorted':''}" onclick="setTS('avg_2026')" style="color:var(--blue-d)">Prom/mes 2026</th>
-            <th class="${tblSort==='forecast_total'?'sorted':''}" onclick="setTS('forecast_total')" style="color:var(--forecast)">Forecast H2 26</th>
+            <th class="${tblSort==='forecast_total'?'sorted':''}" onclick="setTS('forecast_total')" style="color:var(--forecast)">Forecast H2</th>
             <th class="${tblSort==='freq'?'sorted':''}" onclick="setTS('freq')">Meses</th>
             <th class="${tblSort==='dias'?'sorted':''}" onclick="setTS('dias')">Días</th>
             <th class="${tblSort==='status'?'sorted':''}" onclick="setTS('status')">Estado</th>
@@ -531,7 +474,7 @@ function buildTabla(){
         </table>
       </div>
     </div>
-    <p class="note">Activo = compró en últimos 90 días · En riesgo = 90–180 días · Churn = sin compra en 2026 · Forecast = mismo mes 2025 × 1.35 · Activo = últimos 90 días</p>`;
+    <p class="note">Activo = compró últimos 90 días · En riesgo = 90–180 días · Churn = sin compra 2026 · Forecast = mismo mes 2025 × 1.35</p>`;
   renderTabla();
 }
 function setTF(f){tblFilter=f;buildTabla();}
@@ -551,27 +494,23 @@ function renderTabla(){
   document.getElementById('tbl-cnt').textContent=`Mostrando ${rows.length} de ${all.length} clientes`;
   const sC={activo:'p-activo',nuevo:'p-nuevo','en riesgo':'p-riesgo',churn:'p-churn'};
   const sL={activo:'Activo',nuevo:'Nuevo','en riesgo':'En riesgo',churn:'Churn'};
-
-  // Calcular totales de las filas visibles
-  const sumTotal    = rows.reduce((s,r)=>s+r.total,0);
-  const sumYtd25    = rows.reduce((s,r)=>s+(r.ytd25||0),0);
-  const sumYtd26    = rows.reduce((s,r)=>s+(r.ytd26||0),0);
-  const sumAvg      = rows.reduce((s,r)=>s+(r.avg_2026||0),0);
-  const sumForecast = rows.reduce((s,r)=>s+(r.forecast_total||0),0);
-  const ytdTotalPct = sumYtd25>0?((sumYtd26-sumYtd25)/sumYtd25*100).toFixed(1):null;
-
-  const filaTotal = `<tr style="background:var(--bg2);border-top:1.5px solid var(--border)">
+  const sumTotal=rows.reduce((s,r)=>s+r.total,0);
+  const sumYtd25=rows.reduce((s,r)=>s+(r.ytd25||0),0);
+  const sumYtd26=rows.reduce((s,r)=>s+(r.ytd26||0),0);
+  const sumAvg=rows.reduce((s,r)=>s+(r.avg_2026||0),0);
+  const sumFc=rows.reduce((s,r)=>s+(r.forecast_total||0),0);
+  const ytdPct=sumYtd25>0?((sumYtd26-sumYtd25)/sumYtd25*100).toFixed(1):null;
+  const filaTotal=`<tr style="background:var(--bg2);border-top:1.5px solid var(--border)">
     <td></td>
-    <td style="font-size:12px;font-weight:600;color:var(--txt)">TOTAL (${rows.length} clientes)</td>
-    <td style="text-align:right;font-weight:600;color:var(--txt)">${fmtF(sumTotal)}</td>
+    <td style="font-size:12px;font-weight:600">TOTAL (${rows.length} clientes)</td>
+    <td style="text-align:right;font-weight:600">${fmtF(sumTotal)}</td>
     <td style="text-align:right;font-weight:600;color:var(--txt2)">${fmtF(sumYtd25)}</td>
     <td style="text-align:right;font-weight:600;color:var(--txt2)">${fmtF(sumYtd26)}</td>
-    <td style="text-align:right">${ytdTotalPct!==null?`<span class="pct-pill" style="background:${pBg(parseFloat(ytdTotalPct))};color:${pCol(parseFloat(ytdTotalPct))};font-weight:600">${ytdTotalPct>=0?'+':''}${ytdTotalPct}%</span>`:'—'}</td>
+    <td style="text-align:right">${ytdPct!==null?`<span class="pct-pill" style="background:${pBg(parseFloat(ytdPct))};color:${pCol(parseFloat(ytdPct))};font-weight:600">${parseFloat(ytdPct)>=0?'+':''}${ytdPct}%</span>`:'—'}</td>
     <td style="text-align:right;font-weight:600;color:var(--blue-d)">${fmtF(sumAvg)}</td>
-    <td style="text-align:right;font-weight:600;color:var(--forecast)">${fmtF(sumForecast)}</td>
+    <td style="text-align:right;font-weight:600;color:var(--forecast)">${fmtF(sumFc)}</td>
     <td></td><td></td><td></td><td></td><td></td>
   </tr>`;
-
   document.getElementById('tbl-body').innerHTML=rows.map((r,i)=>{
     const bw=Math.round(r.total/maxT*100);
     return`<tr>
@@ -589,66 +528,48 @@ function renderTabla(){
       <td style="font-size:11px;color:var(--txt2)">${fmtM(r.ultima)}</td>
       <td style="font-size:11px;color:var(--txt3)">${fmtM(r.primera)}</td>
     </tr>`;
-  }).join('') + filaTotal;
+  }).join('')+filaTotal;
 }
+
 function buildActivos(){
-  const cpm = DATA.clientes_por_mes;
-  if(!cpm){ document.getElementById('pane-activos').innerHTML='<div style="padding:20px;color:var(--txt3)">Sin datos disponibles</div>'; return; }
-  const meses = Object.keys(cpm);
-  const maxCount = Math.max(...meses.map(m=>cpm[m].count));
-  const maxRev = Math.max(...meses.map(m=>cpm[m].revenue));
-  const avg = Math.round(meses.reduce((s,m)=>s+cpm[m].count,0)/meses.length);
-
-  // Separar 2025 y 2026
-  const m2025 = meses.filter(m=>m.startsWith('2025'));
-  const m2026 = meses.filter(m=>m.startsWith('2026'));
-  const avg25 = m2025.length ? Math.round(m2025.reduce((s,m)=>s+cpm[m].count,0)/m2025.length) : 0;
-  const avg26 = m2026.length ? Math.round(m2026.reduce((s,m)=>s+cpm[m].count,0)/m2026.length) : 0;
-
+  const cpm=DATA.clientes_por_mes;
+  if(!cpm){document.getElementById('pane-activos').innerHTML='<div style="padding:20px;color:var(--txt3)">Sin datos</div>';return;}
+  const meses=Object.keys(cpm);
+  const maxCount=Math.max(...meses.map(m=>cpm[m].count));
+  const avg=Math.round(meses.reduce((s,m)=>s+cpm[m].count,0)/meses.length);
+  const m2025=meses.filter(m=>m.startsWith('2025'));
+  const m2026=meses.filter(m=>m.startsWith('2026'));
+  const avg25=m2025.length?Math.round(m2025.reduce((s,m)=>s+cpm[m].count,0)/m2025.length):0;
+  const avg26=m2026.length?Math.round(m2026.reduce((s,m)=>s+cpm[m].count,0)/m2026.length):0;
   document.getElementById('pane-activos').innerHTML=`
     <div class="kpis" style="margin-bottom:16px">
-      <div class="kpi"><div class="kl">Promedio mensual cartera</div><div class="kv">${avg}</div><div class="ks">clientes activos por mes</div></div>
+      <div class="kpi"><div class="kl">Promedio mensual</div><div class="kv">${avg}</div><div class="ks">clientes activos/mes</div></div>
       <div class="kpi" style="background:var(--blue-l)"><div class="kl" style="color:var(--blue-d)">Promedio 2025</div><div class="kv" style="color:var(--blue-d)">${avg25}</div><div class="ks" style="color:var(--blue-d)">clientes/mes</div></div>
       <div class="kpi" style="background:var(--green-l)"><div class="kl" style="color:var(--green)">Promedio 2026</div><div class="kv" style="color:var(--green)">${avg26}</div><div class="ks" style="color:var(--green)">clientes/mes</div></div>
       <div class="kpi"><div class="kl">Mejor mes</div><div class="kv">${cpm[meses.reduce((a,b)=>cpm[a].count>cpm[b].count?a:b)].count}</div><div class="ks">${cpm[meses.reduce((a,b)=>cpm[a].count>cpm[b].count?a:b)].label}</div></div>
     </div>
     <div class="card">
-      <div class="ct">Clientes activos por mes — detalle</div>
+      <div class="ct">Clientes activos por mes</div>
       <div class="tbl-wrap">
         <table>
-          <colgroup>
-            <col style="width:30px">
-            <col style="width:90px">
-            <col style="min-width:200px">
-            <col style="width:90px">
-            <col style="width:110px">
-            <col style="width:90px">
-          </colgroup>
+          <colgroup><col style="width:30px"><col style="width:90px"><col style="min-width:200px"><col style="width:90px"><col style="width:110px"><col style="width:90px"></colgroup>
           <thead><tr>
-            <th class="left">#</th>
-            <th class="left">Mes</th>
-            <th class="left">Clientes activos</th>
-            <th>Nº clientes</th>
-            <th>Revenue neto</th>
-            <th>Ticket prom.</th>
+            <th class="left">#</th><th class="left">Mes</th><th class="left">Actividad</th>
+            <th>Nº clientes</th><th>Revenue neto</th><th>Ticket prom.</th>
           </tr></thead>
           <tbody>
             ${meses.map((m,i)=>{
-              const v=cpm[m];
-              const barW=Math.round(v.count/maxCount*100);
-              const is26=m.startsWith('2026');
-              const ticket=v.count>0?Math.round(v.revenue/v.count):0;
+              const v=cpm[m];const barW=Math.round(v.count/maxCount*100);
+              const is26=m.startsWith('2026');const ticket=v.count>0?Math.round(v.revenue/v.count):0;
               return`<tr>
                 <td style="text-align:center;color:var(--txt3);font-size:11px">${i+1}</td>
                 <td style="font-weight:500;color:${is26?'var(--blue-d)':'var(--txt2)'}">${v.label}</td>
-                <td>
-                  <div style="display:flex;align-items:center;gap:8px">
-                    <div style="flex:1;background:var(--bg3);border-radius:3px;height:8px">
-                      <div style="width:${barW}%;background:${is26?'var(--blue-d)':'#85B7EB'};height:8px;border-radius:3px"></div>
-                    </div>
-                    <span style="font-size:11px;color:var(--txt3);white-space:nowrap">${v.count} de ${Object.keys(DATA.clients).length}</span>
+                <td><div style="display:flex;align-items:center;gap:8px">
+                  <div style="flex:1;background:var(--bg3);border-radius:3px;height:8px">
+                    <div style="width:${barW}%;background:${is26?'var(--blue-d)':'#85B7EB'};height:8px;border-radius:3px"></div>
                   </div>
-                </td>
+                  <span style="font-size:11px;color:var(--txt3);white-space:nowrap">${v.count} de ${Object.keys(DATA.clients).length}</span>
+                </div></td>
                 <td style="text-align:right;font-size:14px;font-weight:500;color:${is26?'var(--blue-d)':'var(--txt)'}">${v.count}</td>
                 <td style="text-align:right;color:var(--txt2)">${fmt(v.revenue)}</td>
                 <td style="text-align:right;color:var(--txt3)">${fmt(ticket)}</td>
@@ -657,11 +578,11 @@ function buildActivos(){
           </tbody>
         </table>
       </div>
-      <p class="note" style="margin-top:8px">Activo = cliente con compra neta positiva ese mes (descontando notas de crédito)</p>
+      <p class="note" style="margin-top:8px">Activo = compra neta positiva ese mes (descontando notas de crédito)</p>
     </div>`;
 }
 
-// loadData() se llama desde checkLogin()
+// Arranque
 if(sessionStorage.getItem('kam_auth')==='1') loadData();
 </script>
 </body>
