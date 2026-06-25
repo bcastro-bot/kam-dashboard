@@ -177,12 +177,14 @@ select{font-size:11px;padding:4px 8px;border:.5px solid var(--border);border-rad
     <div id="app" style="display:none">
       <div class="kpis" id="kpis"></div>
       <div class="tabs">
+        <button class="tab" onclick="showTab('equipo')">🏢 Equipo</button>
         <button class="tab on" onclick="showTab('cartera')">Cartera</button>
         <button class="tab" onclick="showTab('clientes')">Por cliente</button>
         <button class="tab" onclick="showTab('forecast')">Forecast 2026</button>
         <button class="tab" onclick="showTab('activos')">Clientes por mes</button>
         <button class="tab" onclick="showTab('tabla')">Tabla completa</button>
       </div>
+      <div id="pane-equipo" style="display:none"></div>
       <div id="pane-cartera"></div>
       <div id="pane-clientes" style="display:none"></div>
       <div id="pane-forecast" style="display:none"></div>
@@ -269,9 +271,10 @@ function setPeriod(){
 
 function showTab(t){
   curTab=t;
-  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',['cartera','clientes','forecast','activos','tabla'][i]===t));
-  ['cartera','clientes','forecast','activos','tabla'].forEach(id=>document.getElementById('pane-'+id).style.display=id===t?'block':'none');
-  if(t==='cartera')buildCartera();
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',['equipo','cartera','clientes','forecast','activos','tabla'][i]===t));
+  ['equipo','cartera','clientes','forecast','activos','tabla'].forEach(id=>document.getElementById('pane-'+id).style.display=id===t?'block':'none');
+  if(t==='equipo')buildEquipo();
+  else if(t==='cartera')buildCartera();
   else if(t==='clientes')buildCliente();
   else if(t==='forecast')buildForecast();
   else if(t==='activos')buildActivos();
@@ -627,6 +630,144 @@ function buildActivos(){
       </div>
       <p class="note" style="margin-top:8px">Activo = compra neta positiva ese mes (descontando notas de crédito)</p>
     </div>`;
+}
+
+// ── Tab Equipo ─────────────────────────────────────────────────────────────
+function buildEquipo(){
+  const kams=FULL_DATA.kams;
+  // Solo KAMs con datos relevantes
+  const kamsMain=kams.filter(k=>FULL_DATA[k].cartera.total>1000000);
+  const totalRev=kamsMain.reduce((s,k)=>s+FULL_DATA[k].cartera.total,0);
+  const totalClientes=kamsMain.reduce((s,k)=>s+Object.keys(FULL_DATA[k].clients).length,0);
+  const totalFc=kamsMain.reduce((s,k)=>s+FULL_DATA[k].cartera.forecast_total,0);
+  const totalYtd25=kamsMain.reduce((s,k)=>s+(FULL_DATA[k].cartera.ytd25||0),0);
+  const totalYtd26=kamsMain.reduce((s,k)=>s+(FULL_DATA[k].cartera.ytd26||0),0);
+  const teamYtdPct=totalYtd25>0?((totalYtd26-totalYtd25)/totalYtd25*100).toFixed(1):null;
+
+  // Conteo global de estados
+  const counts={activo:0,nuevo:0,'en riesgo':0,churn:0};
+  kamsMain.forEach(k=>Object.values(FULL_DATA[k].clients).forEach(c=>counts[c.status]=(counts[c.status]||0)+1));
+
+  // Tabla ranking KAMs
+  const kamRows=kamsMain.map(k=>{
+    const d=FULL_DATA[k];
+    const cl=Object.values(d.clients);
+    const cnt={activo:0,nuevo:0,'en riesgo':0,churn:0};
+    cl.forEach(c=>cnt[c.status]=(cnt[c.status]||0)+1);
+    const share=totalRev>0?(d.cartera.total/totalRev*100).toFixed(1):0;
+    return{kam:k,total:d.cartera.total,clientes:cl.length,ytd_pct:d.cartera.ytd_pct,fc:d.cartera.forecast_total,share,cnt};
+  }).sort((a,b)=>b.total-a.total);
+
+  // Meses comunes para gráfico equipo
+  const months=FULL_DATA[kamsMain[0]].months;
+  const labels=FULL_DATA[kamsMain[0]].month_labels;
+  const hc=FULL_DATA[kamsMain[0]].hist_count;
+  const teamVals=months.map((_,i)=>kamsMain.reduce((s,k)=>{
+    const v=FULL_DATA[k].cartera.vals[i]||0; return s+v;
+  },0));
+
+  // Colores por KAM
+  const kamColors={'BC':'#FA345E','BG':'#146787','LJ':'#45C1AD','CF':'#B2A8E7','AA':'#97E89F','DA':'#FFE6E8','SC':'#D7FAB6','EC':'#1B1B1B','SG':'#888'};
+
+  document.getElementById('pane-equipo').innerHTML=`
+    <div class="kpis" style="margin-bottom:18px">
+      <div class="kpi"><div class="kl">Revenue total equipo</div><div class="kv">${fmt(totalRev)}</div><div class="ks">Todos los KAMs</div></div>
+      <div class="kpi"><div class="kl">YTD equipo vs 2025</div><div class="kv" style="color:${pCol(parseFloat(teamYtdPct))}">${teamYtdPct!==null?(parseFloat(teamYtdPct)>=0?'+':'')+teamYtdPct+'%':'s/d'}</div><div class="ks">${fmt(totalYtd25)} → ${fmt(totalYtd26)}</div></div>
+      <div class="kpi" style="background:var(--forecast-l)"><div class="kl" style="color:var(--forecast)">Forecast H2 2026 equipo</div><div class="kv" style="color:var(--forecast)">${fmt(totalFc)}</div><div class="ks" style="color:var(--forecast)">H2 2025 × 1.35</div></div>
+      <div class="kpi"><div class="kl">Total clientes equipo</div><div class="kv">${totalClientes}</div><div class="ks">${kamsMain.length} KAMs activos</div></div>
+      <div class="kpi" style="background:var(--green-l)"><div class="kl" style="color:var(--green)">Activos + nuevos</div><div class="kv" style="color:var(--green)">${counts.activo+counts.nuevo}</div><div class="ks" style="color:var(--green)">${Math.round((counts.activo+counts.nuevo)/totalClientes*100)}% cartera global</div></div>
+      <div class="kpi" style="background:var(--red-l)"><div class="kl" style="color:var(--red)">Churn equipo</div><div class="kv" style="color:var(--red)">${counts.churn}</div><div class="ks" style="color:var(--red)">sin compra en 2026</div></div>
+    </div>
+
+    <div class="g2" style="margin-bottom:12px">
+      <div class="card">
+        <div class="ct">Ranking KAMs — revenue histórico</div>
+        <div class="tbl-wrap">
+          <table>
+            <colgroup><col style="width:28px"><col style="width:48px"><col style="min-width:120px"><col style="width:72px"><col style="width:55px"><col style="width:72px"><col style="width:60px"><col style="width:72px"></colgroup>
+            <thead><tr>
+              <th class="left">#</th>
+              <th class="left">KAM</th>
+              <th class="left">Distribución</th>
+              <th>Revenue</th>
+              <th>Share</th>
+              <th>YTD vs 25</th>
+              <th>Clientes</th>
+              <th style="color:var(--forecast)">Forecast H2</th>
+            </tr></thead>
+            <tbody>
+              ${kamRows.map((r,i)=>{
+                const bw=Math.round(r.total/kamRows[0].total*100);
+                const col=kamColors[r.kam]||'#888';
+                return`<tr style="cursor:pointer" onclick="document.getElementById('kam-select').value='${r.kam}';setKAM();showTab('cartera')">
+                  <td style="text-align:center;color:var(--txt3);font-size:11px">${i+1}</td>
+                  <td><span style="font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px;background:${col}22;color:${col}">${r.kam}</span></td>
+                  <td><div style="background:var(--bg3);border-radius:3px;height:6px"><div style="width:${bw}%;background:${col};height:6px;border-radius:3px"></div></div></td>
+                  <td style="text-align:right;font-weight:500">${fmt(r.total)}</td>
+                  <td style="text-align:right;color:var(--txt3)">${r.share}%</td>
+                  <td style="text-align:right">${r.ytd_pct!==null?`<span class="pct-pill" style="background:${pBg(r.ytd_pct)};color:${pCol(r.ytd_pct)}">${fmtP(r.ytd_pct)}</span>`:'<span style="color:var(--txt3)">s/d</span>'}</td>
+                  <td style="text-align:right;color:var(--txt2)">${r.clientes}</td>
+                  <td style="text-align:right;color:var(--forecast);font-weight:500">${r.fc>0?fmt(r.fc):'—'}</td>
+                </tr>`;
+              }).join('')}
+              <tr style="background:var(--bg2);border-top:1.5px solid var(--border)">
+                <td></td>
+                <td style="font-size:11px;font-weight:600">TOTAL</td>
+                <td></td>
+                <td style="text-align:right;font-weight:600">${fmt(totalRev)}</td>
+                <td style="text-align:right;font-weight:600">100%</td>
+                <td style="text-align:right">${teamYtdPct!==null?`<span class="pct-pill" style="background:${pBg(parseFloat(teamYtdPct))};color:${pCol(parseFloat(teamYtdPct))};font-weight:600">${parseFloat(teamYtdPct)>=0?'+':''}${teamYtdPct}%</span>`:'—'}</td>
+                <td style="text-align:right;font-weight:600">${totalClientes}</td>
+                <td style="text-align:right;font-weight:600;color:var(--forecast)">${fmt(totalFc)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note" style="margin-top:8px">Clic en cualquier KAM para ver su cartera detallada</p>
+      </div>
+      <div class="card">
+        <div class="ct">Distribución revenue por KAM</div>
+        <div style="position:relative;height:240px"><canvas id="eq-pie"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px">
+        <div class="ct" style="margin:0">Revenue equipo — acumulado mensual</div>
+        <span class="forecast-badge">* Forecast = H2 2025 × 1.35</span>
+      </div>
+      <div class="legend">
+        ${kamsMain.map(k=>`<span><span class="ld" style="background:${kamColors[k]||'#888'}"></span>${k}</span>`).join('')}
+      </div>
+      <div style="position:relative;height:220px"><canvas id="eq-bar"></canvas></div>
+    </div>`;
+
+  requestAnimationFrame(()=>{
+    // Gráfico pie
+    const ctxP=document.getElementById('eq-pie');
+    if(ctxP){
+      if(charts['eq-pie']){charts['eq-pie'].destroy();}
+      charts['eq-pie']=new Chart(ctxP,{type:'doughnut',data:{
+        labels:kamRows.map(r=>r.kam),
+        datasets:[{data:kamRows.map(r=>r.total),backgroundColor:kamRows.map(r=>kamColors[r.kam]||'#888'),borderWidth:2,borderColor:'var(--bg)'}]
+      },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmt(c.raw)} (${(c.raw/totalRev*100).toFixed(1)}%)`}}}}});
+    }
+
+    // Gráfico barras apiladas
+    const ctxB=document.getElementById('eq-bar');
+    if(ctxB){
+      if(charts['eq-bar']){charts['eq-bar'].destroy();}
+      charts['eq-bar']=new Chart(ctxB,{type:'bar',data:{
+        labels,
+        datasets:kamsMain.map(k=>({
+          label:k,
+          data:FULL_DATA[k].cartera.vals,
+          backgroundColor:months.map((_,i)=>i>=hc?(kamColors[k]||'#888')+'66':(kamColors[k]||'#888')),
+          stack:'s'
+        }))
+      },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.raw)}`}}},scales:{x:{stacked:true,ticks:{autoSkip:true,maxTicksLimit:12,font:{size:9}},grid:{display:false}},y:{stacked:true,ticks:{callback:v=>fmt(v),font:{size:9}},grid:{color:'rgba(128,128,128,.06)'}}}}});
+    }
+  });
 }
 
 // Arranque
