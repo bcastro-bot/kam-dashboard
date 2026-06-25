@@ -178,6 +178,7 @@ select{font-size:11px;padding:4px 8px;border:.5px solid var(--border);border-rad
       <div class="kpis" id="kpis"></div>
       <div class="tabs">
         <button class="tab" onclick="showTab('equipo')">🏢 Equipo</button>
+        <button class="tab" onclick="showTab('ranking')">🏆 Ranking KAM</button>
         <button class="tab on" onclick="showTab('cartera')">Cartera</button>
         <button class="tab" onclick="showTab('clientes')">Por cliente</button>
         <button class="tab" onclick="showTab('forecast')">Forecast 2026</button>
@@ -185,6 +186,7 @@ select{font-size:11px;padding:4px 8px;border:.5px solid var(--border);border-rad
         <button class="tab" onclick="showTab('tabla')">Tabla completa</button>
       </div>
       <div id="pane-equipo" style="display:none"></div>
+      <div id="pane-ranking" style="display:none"></div>
       <div id="pane-cartera"></div>
       <div id="pane-clientes" style="display:none"></div>
       <div id="pane-forecast" style="display:none"></div>
@@ -271,9 +273,10 @@ function setPeriod(){
 
 function showTab(t){
   curTab=t;
-  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',['equipo','cartera','clientes','forecast','activos','tabla'][i]===t));
-  ['equipo','cartera','clientes','forecast','activos','tabla'].forEach(id=>document.getElementById('pane-'+id).style.display=id===t?'block':'none');
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',['equipo','ranking','cartera','clientes','forecast','activos','tabla'][i]===t));
+  ['equipo','ranking','cartera','clientes','forecast','activos','tabla'].forEach(id=>document.getElementById('pane-'+id).style.display=id===t?'block':'none');
   if(t==='equipo')buildEquipo();
+  else if(t==='ranking')buildRankingKAM();
   else if(t==='cartera')buildCartera();
   else if(t==='clientes')buildCliente();
   else if(t==='forecast')buildForecast();
@@ -768,6 +771,172 @@ function buildEquipo(){
       },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${fmt(c.raw)}`}}},scales:{x:{stacked:true,ticks:{autoSkip:true,maxTicksLimit:12,font:{size:9}},grid:{display:false}},y:{stacked:true,ticks:{callback:v=>fmt(v),font:{size:9}},grid:{color:'rgba(128,128,128,.06)'}}}}});
     }
   });
+}
+
+// ── Tab Ranking KAM ────────────────────────────────────────────────────────
+function buildRankingKAM(){
+  const kams=FULL_DATA.kams.filter(k=>FULL_DATA[k].cartera.total>1000000);
+  const kamColors={'BC':'#FA345E','BG':'#146787','LJ':'#45C1AD','CF':'#B2A8E7','AA':'#97E89F','DA':'#FA345E','SC':'#D7FAB6'};
+
+  // Calcular 8 métricas por KAM
+  const metrics={};
+  kams.forEach(k=>{
+    const d=FULL_DATA[k];
+    const cl=Object.values(d.clients);
+    const total=cl.length;
+    const activos=cl.filter(c=>c.status==='activo'||c.status==='nuevo').length;
+    const churn=cl.filter(c=>c.status==='churn').length;
+    const enRiesgo=cl.filter(c=>c.status==='en riesgo').length;
+    const retenidos=cl.filter(c=>c.rev_2025>0&&c.rev_2026>0).length;
+    const con2025=cl.filter(c=>c.rev_2025>0).length;
+    const ytd25=d.cartera.ytd25||0;
+    const ytd26=d.cartera.ytd26||0;
+    const totalRev=d.cartera.total||0;
+    const ticketAvg=total>0?Math.round(totalRev/total):0;
+    metrics[k]={
+      ytd26, ytd25,
+      ytd_pct: ytd25>0?Math.round((ytd26-ytd25)/ytd25*100):0,
+      pct_activos: total>0?Math.round(activos/total*100):0,
+      pct_churn: total>0?Math.round(churn/total*100):0,
+      pct_riesgo: total>0?Math.round(enRiesgo/total*100):0,
+      retencion: con2025>0?Math.round(retenidos/con2025*100):0,
+      ticket: ticketAvg,
+      forecast: d.cartera.forecast_total||0,
+      activos, churn, enRiesgo, total,
+    };
+  });
+
+  // Normalizar 0→100
+  function norm(vals, higherBetter=true){
+    const mn=Math.min(...vals),mx=Math.max(...vals);
+    if(mx===mn)return vals.map(()=>50);
+    return vals.map(v=>higherBetter?Math.round((v-mn)/(mx-mn)*100):Math.round((mx-v)/(mx-mn)*100));
+  }
+
+  const revN    = norm(kams.map(k=>metrics[k].ytd26),      true);
+  const ytdN    = norm(kams.map(k=>metrics[k].ytd_pct),    true);
+  const actN    = norm(kams.map(k=>metrics[k].pct_activos), true);
+  const retN    = norm(kams.map(k=>metrics[k].retencion),   true);
+  const churnN  = norm(kams.map(k=>metrics[k].pct_churn),   false);
+  const riesgoN = norm(kams.map(k=>metrics[k].pct_riesgo),  false);
+  const ticketN = norm(kams.map(k=>metrics[k].ticket),      true);
+  const fcN     = norm(kams.map(k=>metrics[k].forecast),    true);
+
+  // Pesos: 8 factores = 100%
+  const W={rev:0.25,ytd:0.20,activos:0.15,retencion:0.15,churn:0.10,riesgo:0.05,ticket:0.05,forecast:0.05};
+
+  const scored=kams.map((k,i)=>({
+    k, ...metrics[k],
+    score: Math.round(
+      revN[i]*W.rev + ytdN[i]*W.ytd + actN[i]*W.activos +
+      retN[i]*W.retencion + churnN[i]*W.churn + riesgoN[i]*W.riesgo +
+      ticketN[i]*W.ticket + fcN[i]*W.forecast
+    ),
+    bars:{
+      'Revenue YTD':    [revN[i],   '#FA345E'],
+      'Crecimiento':    [ytdN[i],   '#146787'],
+      'Activos %':      [actN[i],   '#45C1AD'],
+      'Retención':      [retN[i],   '#B2A8E7'],
+      'Anti-Churn':     [churnN[i], '#97E89F'],
+      'Anti-Riesgo':    [riesgoN[i],'#FFB300'],
+      'Ticket prom.':   [ticketN[i],'#9B59B6'],
+      'Forecast H2':    [fcN[i],    '#E67E22'],
+    }
+  })).sort((a,b)=>b.score-a.score);
+
+  const medals=['🥇','🥈','🥉'];
+
+  const podiumHtml=scored.slice(0,3).map((r,i)=>{
+    const col=kamColors[r.k]||'#888';
+    return`<div style="flex:1;text-align:center;padding:${i===0?'0':'20px 0 0'}">
+      <div style="font-size:${i===0?'36px':'28px'};margin-bottom:4px">${medals[i]}</div>
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:${i===0?'64px':'52px'};height:${i===0?'64px':'52px'};background:${col};border-radius:50%;margin-bottom:8px">
+        <span style="font-size:${i===0?'22px':'17px'};font-weight:700;color:#fff">${r.k}</span>
+      </div>
+      <div style="font-size:${i===0?'32px':'24px'};font-weight:700;color:${col}">${r.score}</div>
+      <div style="font-size:10px;color:var(--txt3);margin-top:2px">/ 100 pts</div>
+      <div style="font-size:11px;color:var(--txt2);margin-top:6px">${fmt(r.ytd26)} YTD</div>
+      <div style="font-size:10px;color:var(--txt3)">activos ${r.pct_activos}% · ret. ${r.retencion}%</div>
+    </div>`;
+  }).join('');
+
+  const tableHtml=scored.map((r,i)=>{
+    const col=kamColors[r.k]||'#888';
+    const scoreCol=r.score>=60?'var(--green)':r.score>=40?'var(--blue)':r.score>=25?'var(--amber)':'var(--red)';
+    const scoreBg =r.score>=60?'var(--green-l)':r.score>=40?'var(--blue-l)':r.score>=25?'var(--amber-l)':'var(--red-l)';
+    const barsHtml=Object.entries(r.bars).map(([lbl,[val,bc]])=>`
+      <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">
+        <span style="font-size:9px;color:var(--txt3);width:74px;text-align:right;flex-shrink:0">${lbl}</span>
+        <div style="flex:1;background:var(--bg3);border-radius:3px;height:5px">
+          <div style="width:${val}%;background:${bc};height:5px;border-radius:3px"></div>
+        </div>
+        <span style="font-size:9px;color:var(--txt3);width:22px;flex-shrink:0">${val}</span>
+      </div>`).join('');
+    return`<tr>
+      <td style="text-align:center;font-size:14px">${i<3?medals[i]:(i+1)}</td>
+      <td><span style="font-size:13px;font-weight:700;padding:3px 10px;border-radius:8px;background:${col}22;color:${col}">${r.k}</span></td>
+      <td style="text-align:center"><span style="font-size:18px;font-weight:700;padding:4px 12px;border-radius:10px;background:${scoreBg};color:${scoreCol}">${r.score}</span></td>
+      <td style="padding:6px 8px">${barsHtml}</td>
+      <td style="text-align:right;font-weight:500">${fmt(r.ytd26)}</td>
+      <td style="text-align:right;color:${r.ytd_pct>=0?'var(--green)':'var(--red)'};font-weight:500">${r.ytd_pct>=0?'+':''}${r.ytd_pct}%</td>
+      <td style="text-align:right"><span style="font-size:11px;padding:2px 6px;border-radius:6px;background:var(--green-l);color:var(--green)">${r.pct_activos}%</span></td>
+      <td style="text-align:right"><span style="font-size:11px;padding:2px 6px;border-radius:6px;background:var(--amber-l);color:var(--amber)">${r.pct_riesgo}%</span></td>
+      <td style="text-align:right"><span style="font-size:11px;padding:2px 6px;border-radius:6px;background:var(--red-l);color:var(--red)">${r.pct_churn}%</span></td>
+      <td style="text-align:right"><span style="font-size:11px;padding:2px 6px;border-radius:6px;background:var(--blue-l);color:var(--blue)">${r.retencion}%</span></td>
+      <td style="text-align:right;color:var(--txt2)">${fmt(r.ticket)}</td>
+      <td style="text-align:right;color:var(--forecast);font-weight:500">${fmt(r.forecast)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('pane-ranking').innerHTML=`
+    <div class="card" style="margin-bottom:12px">
+      <div class="ct">Score ponderado — 8 factores</div>
+      <div style="font-size:11px;color:var(--txt3);margin-bottom:16px;line-height:1.8">
+        <span style="padding:2px 7px;border-radius:6px;background:#FA345E22;color:#FA345E;font-weight:500">Revenue YTD 25%</span> &nbsp;
+        <span style="padding:2px 7px;border-radius:6px;background:#14678722;color:#146787;font-weight:500">Crecimiento 20%</span> &nbsp;
+        <span style="padding:2px 7px;border-radius:6px;background:#45C1AD22;color:#45C1AD;font-weight:500">% Activos 15%</span> &nbsp;
+        <span style="padding:2px 7px;border-radius:6px;background:#B2A8E722;color:#7B6BC4;font-weight:500">Retención 15%</span> &nbsp;
+        <span style="padding:2px 7px;border-radius:6px;background:#97E89F22;color:#2E7D32;font-weight:500">Anti-Churn 10%</span> &nbsp;
+        <span style="padding:2px 7px;border-radius:6px;background:#FFB30022;color:#B86A00;font-weight:500">Anti-Riesgo 5%</span> &nbsp;
+        <span style="padding:2px 7px;border-radius:6px;background:#9B59B622;color:#6A3F9B;font-weight:500">Ticket 5%</span> &nbsp;
+        <span style="padding:2px 7px;border-radius:6px;background:#E67E2222;color:#B05A10;font-weight:500">Forecast H2 5%</span>
+      </div>
+      <div style="display:flex;align-items:flex-end;justify-content:center;gap:20px;padding:20px 0 16px;border-bottom:.5px solid var(--border);margin-bottom:16px">
+        ${podiumHtml}
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="tbl-wrap">
+        <table>
+          <colgroup>
+            <col style="width:34px"><col style="width:60px"><col style="width:72px">
+            <col style="min-width:240px">
+            <col style="width:80px"><col style="width:72px">
+            <col style="width:68px"><col style="width:68px"><col style="width:68px"><col style="width:72px">
+            <col style="width:76px"><col style="width:76px">
+          </colgroup>
+          <thead><tr>
+            <th class="left">#</th>
+            <th class="left">KAM</th>
+            <th>Score</th>
+            <th class="left">Desglose (8 factores)</th>
+            <th>Rev. YTD</th>
+            <th>Crec. %</th>
+            <th>Activos</th>
+            <th>En riesgo</th>
+            <th>Churn</th>
+            <th>Retención</th>
+            <th>Ticket prom.</th>
+            <th style="color:var(--forecast)">Forecast H2</th>
+          </tr></thead>
+          <tbody>${tableHtml}</tbody>
+        </table>
+      </div>
+    </div>
+    <p class="note" style="margin-top:8px">
+      Score 0–100 normalizado dentro del equipo · Verde ≥60 · Azul ≥40 · Naranja ≥25 · Rojo &lt;25<br>
+      Retención = clientes con compra en 2025 que siguen comprando en 2026 · Anti-Riesgo = menor % en riesgo = mejor score
+    </p>`;
 }
 
 // Arranque
