@@ -777,156 +777,127 @@ function buildEquipo(){
 function buildTickets(){
   var td = FULL_DATA.tickets_data;
   var months = FULL_DATA.tickets_months;
-  if(!td || !months){
-    document.getElementById('pane-tickets').innerHTML='<div style="padding:20px;color:var(--txt3)">Sin datos de tickets. Actualiza el data.json.</div>';
-    return;
-  }
+  var el = document.getElementById('pane-tickets');
+  if(!td || !months){ el.innerHTML = "<div style='padding:20px;color:var(--txt3)'>Sin datos de tickets.</div>"; return; }
+
   var kams = FULL_DATA.kams.filter(function(k){ return td[k] && FULL_DATA[k] && FULL_DATA[k].cartera.total > 1000000; });
-  var kamColors = {'BC':'#FA345E','BG':'#146787','LJ':'#45C1AD','CF':'#B2A8E7','AA':'#97E89F','DA':'#FFB300','SC':'#D7FAB6'};
-  var MN = months.map(function(m){
-    var p=m.split('-'); var n=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    return n[+p[1]]+' '+p[0].slice(2);
-  });
+  var kamColors = {BC:'#FA345E',BG:'#146787',LJ:'#45C1AD',CF:'#B2A8E7',AA:'#97E89F',DA:'#FFB300',SC:'#D7FAB6'};
+  function mnLabel(m){ var p=m.split('-'); var n=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']; return n[+p[1]]+' '+p[0].slice(2); }
 
   // KPI cards
-  var kpiRows = '';
+  var html = '<div class="kpis" style="margin-bottom:16px">';
   kams.forEach(function(k){
-    var col = kamColors[k]||'#888';
-    var avgT = td[k].avg_tickets;
-    var avgP = td[k].avg_ticket_prom;
-    kpiRows += '<div class="kpi" style="border-left:3px solid '+col+'">' +
-      '<div class="kl" style="color:'+col+';font-weight:600">'+k+'</div>' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:4px">' +
-        '<div><div style="font-size:20px;font-weight:600;color:var(--txt)">'+avgT+'</div>' +
-        '<div class="ks">tickets/mes prom.</div></div>' +
-        '<div style="text-align:right"><div style="font-size:14px;font-weight:500;color:'+col+'">'+fmt(avgP)+'</div>' +
-        '<div class="ks">ticket promedio</div></div>' +
-      '</div></div>';
+    var col = kamColors[k] || '#888';
+    html += '<div class="kpi" style="border-left:3px solid ' + col + '">';
+    html += '<div class="kl" style="color:' + col + ';font-weight:600">' + k + '</div>';
+    html += '<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:4px">';
+    html += '<div><div style="font-size:20px;font-weight:600;color:var(--txt)">' + td[k].avg_tickets + '</div>';
+    html += '<div class="ks">tickets/mes prom.</div></div>';
+    html += '<div style="text-align:right"><div style="font-size:14px;font-weight:500;color:' + col + '">' + fmt(td[k].avg_ticket_prom) + '</div>';
+    html += '<div class="ks">ticket promedio</div></div>';
+    html += '</div></div>';
   });
+  html += '</div>';
 
-  // Selector KAM
-  var selHtml = '';
+  // Tabla comparativa todos los KAMs
+  html += '<div class="card" style="margin-bottom:12px">';
+  html += '<div class="ct">Tickets y ticket promedio mensual — comparativa equipo</div>';
+  html += '<p class="note" style="margin-bottom:10px">Filas destacadas = 2026 · Ticket promedio = revenue neto / N de tickets</p>';
+  html += '<div class="tbl-wrap"><table style="width:100%;border-collapse:collapse">';
+  html += '<thead>';
+  // Fila 1: KAM headers
+  html += '<tr style="background:var(--bg2)"><th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:left;border-bottom:0.5px solid var(--border)">Mes</th>';
   kams.forEach(function(k){
-    var col = kamColors[k]||'#888';
-    selHtml += '<button id="tkb-'+k+'" onclick="tkSelKam(''+k+'')" ' +
-      'style="font-size:11px;padding:4px 12px;border-radius:8px;border:0.5px solid '+col+';' +
-      'background:none;color:'+col+';cursor:pointer;font-weight:500">'+k+'</button>';
+    var col = kamColors[k] || '#888';
+    html += '<th colspan="2" style="padding:7px 8px;font-size:11px;font-weight:700;color:' + col + ';text-align:center;border-bottom:0.5px solid var(--border);border-left:1px solid var(--border)">' + k + '</th>';
   });
-
-  // Tabla resumen todos los KAMs
-  var headerCols = '<col style="width:70px">';
-  kams.forEach(function(){ headerCols += '<col style="width:90px"><col style="width:100px">'; });
-  var headerRow = '<th class="left" style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;border-bottom:0.5px solid var(--border)">Mes</th>';
-  kams.forEach(function(k){
-    var col = kamColors[k]||'#888';
-    headerRow += '<th colspan="2" style="padding:7px 8px;font-size:10px;font-weight:600;color:'+col+';text-transform:uppercase;text-align:center;border-bottom:0.5px solid var(--border);border-left:1px solid var(--border)">'+k+'</th>';
-  });
-  var subHeaderRow = '<th></th>';
+  html += '</tr>';
+  // Fila 2: sub-headers
+  html += '<tr style="background:var(--bg2)"><th></th>';
   kams.forEach(function(){
-    subHeaderRow += '<th style="padding:4px 8px;font-size:9px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right;border-left:1px solid var(--border)">Tickets</th>' +
-      '<th style="padding:4px 8px;font-size:9px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right">Ticket prom.</th>';
+    html += '<th style="padding:4px 8px;font-size:9px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right;border-left:1px solid var(--border)">Tickets</th>';
+    html += '<th style="padding:4px 8px;font-size:9px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right">Prom.</th>';
   });
-
-  var bodyRows = '';
+  html += '</tr></thead><tbody>';
+  // Filas de datos
   months.forEach(function(m, i){
     var is26 = m.startsWith('2026');
-    var rowStyle = is26 ? 'background:var(--bg2)' : '';
-    var row = '<tr style="'+rowStyle+'">';
-    var p=m.split('-'); var n=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    var label = n[+p[1]]+' '+p[0].slice(2);
+    var bg = is26 ? 'background:var(--bg2)' : '';
     var labelColor = is26 ? 'var(--txt)' : 'var(--txt2)';
-    row += '<td style="padding:7px 8px;font-size:12px;font-weight:'+(is26?600:400)+';color:'+labelColor+';border-bottom:0.5px solid var(--border)">'+label+'</td>';
+    var fw = is26 ? '600' : '400';
+    html += '<tr style="' + bg + '">';
+    html += '<td style="padding:7px 8px;font-size:12px;font-weight:' + fw + ';color:' + labelColor + ';border-bottom:0.5px solid var(--border)">' + mnLabel(m) + '</td>';
     kams.forEach(function(k){
-      var col = kamColors[k]||'#888';
+      var col = kamColors[k] || '#888';
       var t = td[k].tickets_por_mes[i] || 0;
       var p2 = td[k].ticket_prom_mes[i] || 0;
       var tColor = is26 ? col : 'var(--txt2)';
-      row += '<td style="text-align:right;padding:7px 8px;font-size:12px;font-weight:'+(is26?600:400)+';color:'+tColor+';border-bottom:0.5px solid var(--border);border-left:1px solid var(--border)">'+(t>0?t:'—')+'</td>';
-      row += '<td style="text-align:right;padding:7px 8px;font-size:12px;color:'+(is26?col:'var(--txt3)')+';border-bottom:0.5px solid var(--border)">'+(p2>0?fmt(p2):'—')+'</td>';
+      html += '<td style="text-align:right;padding:7px 8px;font-size:12px;font-weight:' + fw + ';color:' + tColor + ';border-bottom:0.5px solid var(--border);border-left:1px solid var(--border)">' + (t > 0 ? t : '—') + '</td>';
+      html += '<td style="text-align:right;padding:7px 8px;font-size:12px;color:' + (is26 ? col : 'var(--txt3)') + ';border-bottom:0.5px solid var(--border)">' + (p2 > 0 ? fmt(p2) : '—') + '</td>';
     });
-    row += '</tr>';
-    bodyRows += row;
+    html += '</tr>';
   });
+  html += '</tbody></table></div></div>';
 
-  var resumenTable =
-    '<div class="tbl-wrap">' +
-    '<table style="width:100%;border-collapse:collapse">' +
-      '<colgroup>'+headerCols+'</colgroup>' +
-      '<thead>' +
-        '<tr style="background:var(--bg2)">'+headerRow+'</tr>' +
-        '<tr style="background:var(--bg2)">'+subHeaderRow+'</tr>' +
-      '</thead>' +
-      '<tbody>'+bodyRows+'</tbody>' +
-    '</table></div>';
+  // Detalle individual
+  html += '<div class="card"><div class="ct">Detalle por KAM</div>';
+  html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px" id="tk-sel">';
+  kams.forEach(function(k){
+    var col = kamColors[k] || '#888';
+    html += "<button id='tkb-" + k + "' onclick='tkSelKam(\"" + k + "\")' ";
+    html += 'style="font-size:11px;padding:4px 12px;border-radius:8px;border:0.5px solid ' + col + ';background:none;color:' + col + ';cursor:pointer;font-weight:500">' + k + '</button>';
+  });
+  html += '</div><div id="tk-detail"></div></div>';
 
-  document.getElementById('pane-tickets').innerHTML =
-    '<div class="kpis" style="margin-bottom:16px">'+kpiRows+'</div>' +
-    '<div class="card" style="margin-bottom:12px">' +
-      '<div class="ct">Tickets y ticket promedio mensual — todos los KAMs</div>' +
-      '<p class="note" style="margin-bottom:10px">Filas azules = 2026 · Ticket promedio = revenue neto / número de tickets del mes</p>' +
-      resumenTable +
-    '</div>' +
-    '<div class="card">' +
-      '<div class="ct">Detalle individual por KAM</div>' +
-      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px" id="tk-sel">'+selHtml+'</div>' +
-      '<div id="tk-detail"></div>' +
-    '</div>';
-
+  el.innerHTML = html;
   tkSelKam(curKAM && td[curKAM] ? curKAM : kams[0]);
 }
 
 function tkSelKam(k){
   var td = FULL_DATA.tickets_data;
   var months = FULL_DATA.tickets_months;
-  var kamColors = {'BC':'#FA345E','BG':'#146787','LJ':'#45C1AD','CF':'#B2A8E7','AA':'#97E89F','DA':'#FFB300','SC':'#D7FAB6'};
+  var kamColors = {BC:'#FA345E',BG:'#146787',LJ:'#45C1AD',CF:'#B2A8E7',AA:'#97E89F',DA:'#FFB300',SC:'#D7FAB6'};
   var kams = FULL_DATA.kams.filter(function(k2){ return td[k2] && FULL_DATA[k2] && FULL_DATA[k2].cartera.total > 1000000; });
-  var col = kamColors[k]||'#888';
-  var MN = months.map(function(m){
-    var p=m.split('-'); var n=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    return n[+p[1]]+' '+p[0].slice(2);
-  });
+  var col = kamColors[k] || '#888';
+  function mnLabel(m){ var p=m.split('-'); var n=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']; return n[+p[1]]+' '+p[0].slice(2); }
 
   kams.forEach(function(k2){
-    var btn = document.getElementById('tkb-'+k2);
-    if(btn){
-      btn.style.background = k2===k ? (kamColors[k2]||'#888')+'22' : 'none';
-      btn.style.fontWeight = k2===k ? '700' : '500';
-    }
+    var btn = document.getElementById('tkb-' + k2);
+    if(btn){ btn.style.background = k2===k ? (kamColors[k2]||'#888')+'22' : 'none'; btn.style.fontWeight = k2===k ? '700' : '500'; }
   });
 
   var ticks = td[k].tickets_por_mes;
   var proms = td[k].ticket_prom_mes;
-  var maxT = Math.max.apply(null, ticks.filter(function(v){return v>0;})) || 1;
+  var maxT = 1;
+  ticks.forEach(function(v){ if(v > maxT) maxT = v; });
 
-  var rows = '';
+  var html = '<table style="width:100%;border-collapse:collapse">';
+  html += '<colgroup><col style="width:70px"><col style="min-width:200px"><col style="width:130px"></colgroup>';
+  html += '<thead><tr style="background:var(--bg2)">';
+  html += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:left;border-bottom:0.5px solid var(--border)">Mes</th>';
+  html += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:left;border-bottom:0.5px solid var(--border)">Tickets</th>';
+  html += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right;border-bottom:0.5px solid var(--border)">Ticket Promedio</th>';
+  html += '</tr></thead><tbody>';
+
   months.forEach(function(m, i){
     var is26 = m.startsWith('2026');
-    var bw = Math.round(ticks[i]/maxT*100);
-    rows +=
-      '<tr>' +
-      '<td style="font-size:11px;padding:7px 8px;color:'+(is26?col:'var(--txt2)')+';font-weight:'+(is26?600:400)+';border-bottom:0.5px solid var(--border)">'+MN[i]+'</td>' +
-      '<td style="padding:7px 8px;border-bottom:0.5px solid var(--border)">' +
-        '<div style="display:flex;align-items:center;gap:8px">' +
-          '<div style="flex:1;background:var(--bg3);border-radius:3px;height:7px">' +
-            '<div style="width:'+bw+'%;background:'+col+';height:7px;border-radius:3px;opacity:'+(is26?1:0.5)+'"></div>' +
-          '</div>' +
-          '<span style="font-size:13px;font-weight:600;color:'+(is26?col:'var(--txt)')+';width:40px;text-align:right">'+(ticks[i]||'—')+'</span>' +
-        '</div>' +
-      '</td>' +
-      '<td style="text-align:right;font-size:12px;font-weight:500;padding:7px 8px;color:'+(is26?col:'var(--txt2)')+';border-bottom:0.5px solid var(--border)">'+(proms[i]>0?fmt(proms[i]):'—')+'</td>' +
-      '</tr>';
+    var bw = Math.round(ticks[i] / maxT * 100);
+    var tColor = is26 ? col : 'var(--txt)';
+    var bg = is26 ? 'background:var(--bg2)' : '';
+    html += '<tr style="' + bg + '">';
+    html += '<td style="font-size:11px;padding:7px 8px;color:' + (is26?col:'var(--txt2)') + ';font-weight:' + (is26?600:400) + ';border-bottom:0.5px solid var(--border)">' + mnLabel(m) + '</td>';
+    html += '<td style="padding:7px 8px;border-bottom:0.5px solid var(--border)">';
+    html += '<div style="display:flex;align-items:center;gap:8px">';
+    html += '<div style="flex:1;background:var(--bg3);border-radius:3px;height:7px">';
+    html += '<div style="width:' + bw + '%;background:' + col + ';height:7px;border-radius:3px;opacity:' + (is26?1:0.5) + '"></div></div>';
+    html += '<span style="font-size:13px;font-weight:600;color:' + tColor + ';width:40px;text-align:right">' + (ticks[i] || '—') + '</span>';
+    html += '</div></td>';
+    html += '<td style="text-align:right;font-size:12px;font-weight:500;padding:7px 8px;color:' + (is26?col:'var(--txt2)') + ';border-bottom:0.5px solid var(--border)">' + (proms[i] > 0 ? fmt(proms[i]) : '—') + '</td>';
+    html += '</tr>';
   });
 
-  document.getElementById('tk-detail').innerHTML =
-    '<table style="width:100%;border-collapse:collapse">' +
-      '<colgroup><col style="width:70px"><col style="min-width:200px"><col style="width:130px"></colgroup>' +
-      '<thead><tr style="background:var(--bg2)">' +
-        '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:left;border-bottom:0.5px solid var(--border)">Mes</th>' +
-        '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:left;border-bottom:0.5px solid var(--border)">N° Tickets</th>' +
-        '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right;border-bottom:0.5px solid var(--border)">Ticket Promedio</th>' +
-      '</tr></thead>' +
-      '<tbody>'+rows+'</tbody>' +
-    '</table>';
+  html += '</tbody></table>';
+  document.getElementById('tk-detail').innerHTML = html;
 }
 
 // Arranque
