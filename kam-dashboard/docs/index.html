@@ -178,7 +178,7 @@ select{font-size:11px;padding:4px 8px;border:.5px solid var(--border);border-rad
       <div class="kpis" id="kpis"></div>
       <div class="tabs">
         <button class="tab" onclick="showTab('equipo')">🏢 Equipo</button>
-        <button class="tab" onclick="showTab('ranking')">🏆 Ranking KAM</button>
+        <button class="tab" onclick="showTab('tickets')">🎫 Tickets</button>
         <button class="tab on" onclick="showTab('cartera')">Cartera</button>
         <button class="tab" onclick="showTab('clientes')">Por cliente</button>
         <button class="tab" onclick="showTab('forecast')">Forecast 2026</button>
@@ -186,7 +186,7 @@ select{font-size:11px;padding:4px 8px;border:.5px solid var(--border);border-rad
         <button class="tab" onclick="showTab('tabla')">Tabla completa</button>
       </div>
       <div id="pane-equipo" style="display:none"></div>
-      <div id="pane-ranking" style="display:none"></div>
+      <div id="pane-tickets" style="display:none"></div>
       <div id="pane-cartera"></div>
       <div id="pane-clientes" style="display:none"></div>
       <div id="pane-forecast" style="display:none"></div>
@@ -273,10 +273,10 @@ function setPeriod(){
 
 function showTab(t){
   curTab=t;
-  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',['equipo','ranking','cartera','clientes','forecast','activos','tabla'][i]===t));
-  ['equipo','ranking','cartera','clientes','forecast','activos','tabla'].forEach(id=>document.getElementById('pane-'+id).style.display=id===t?'block':'none');
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',['equipo','tickets','cartera','clientes','forecast','activos','tabla'][i]===t));
+  ['equipo','tickets','cartera','clientes','forecast','activos','tabla'].forEach(id=>document.getElementById('pane-'+id).style.display=id===t?'block':'none');
   if(t==='equipo')buildEquipo();
-  else if(t==='ranking')buildRankingKAM();
+  else if(t==='tickets')buildTickets();
   else if(t==='cartera')buildCartera();
   else if(t==='clientes')buildCliente();
   else if(t==='forecast')buildForecast();
@@ -773,170 +773,256 @@ function buildEquipo(){
   });
 }
 
-// ── Tab Ranking KAM ────────────────────────────────────────────────────────
-function buildRankingKAM(){
-  const kams=FULL_DATA.kams.filter(k=>FULL_DATA[k].cartera.total>1000000);
-  const kamColors={'BC':'#FA345E','BG':'#146787','LJ':'#45C1AD','CF':'#B2A8E7','AA':'#97E89F','DA':'#FA345E','SC':'#D7FAB6'};
+// ── Tab Tickets ────────────────────────────────────────────────────────────
+function buildTickets(){
+  const tpm = DATA.tickets_por_mes;
+  if(!tpm){ document.getElementById('pane-tickets').innerHTML='<div style="padding:20px;color:var(--txt3)">Sin datos de tickets</div>'; return; }
 
-  // Calcular 8 métricas por KAM
-  const metrics={};
-  kams.forEach(k=>{
-    const d=FULL_DATA[k];
-    const cl=Object.values(d.clients);
-    const total=cl.length;
-    const activos=cl.filter(c=>c.status==='activo'||c.status==='nuevo').length;
-    const churn=cl.filter(c=>c.status==='churn').length;
-    const enRiesgo=cl.filter(c=>c.status==='en riesgo').length;
-    const retenidos=cl.filter(c=>c.rev_2025>0&&c.rev_2026>0).length;
-    const con2025=cl.filter(c=>c.rev_2025>0).length;
-    const ytd25=d.cartera.ytd25||0;
-    const ytd26=d.cartera.ytd26||0;
-    const totalRev=d.cartera.total||0;
-    const ticketAvg=total>0?Math.round(totalRev/total):0;
-    metrics[k]={
-      ytd26, ytd25,
-      ytd_pct: ytd25>0?Math.round((ytd26-ytd25)/ytd25*100):0,
-      pct_activos: total>0?Math.round(activos/total*100):0,
-      pct_churn: total>0?Math.round(churn/total*100):0,
-      pct_riesgo: total>0?Math.round(enRiesgo/total*100):0,
-      retencion: con2025>0?Math.round(retenidos/con2025*100):0,
-      ticket: ticketAvg,
-      forecast: d.cartera.forecast_total||0,
-      activos, churn, enRiesgo, total,
-    };
-  });
+  const meses = Object.keys(tpm);
+  const maxTickets = Math.max(...meses.map(m=>tpm[m].tickets));
+  const maxProm    = Math.max(...meses.map(m=>tpm[m].ticket_prom));
 
-  // Normalizar 0→100
-  function norm(vals, higherBetter=true){
-    const mn=Math.min(...vals),mx=Math.max(...vals);
-    if(mx===mn)return vals.map(()=>50);
-    return vals.map(v=>higherBetter?Math.round((v-mn)/(mx-mn)*100):Math.round((mx-v)/(mx-mn)*100));
-  }
+  // Promedios globales y por año
+  const m2025 = meses.filter(m=>m.startsWith('2025'));
+  const m2026 = meses.filter(m=>m.startsWith('2026'));
+  const avgTickets   = Math.round(meses.reduce((s,m)=>s+tpm[m].tickets,0)/meses.length);
+  const avgTickets25 = m2025.length?Math.round(m2025.reduce((s,m)=>s+tpm[m].tickets,0)/m2025.length):0;
+  const avgTickets26 = m2026.length?Math.round(m2026.reduce((s,m)=>s+tpm[m].tickets,0)/m2026.length):0;
+  const avgProm25    = m2025.length?Math.round(m2025.reduce((s,m)=>s+tpm[m].ticket_prom,0)/m2025.length):0;
+  const avgProm26    = m2026.length?Math.round(m2026.reduce((s,m)=>s+tpm[m].ticket_prom,0)/m2026.length):0;
 
-  const revN    = norm(kams.map(k=>metrics[k].ytd26),      true);
-  const ytdN    = norm(kams.map(k=>metrics[k].ytd_pct),    true);
-  const actN    = norm(kams.map(k=>metrics[k].pct_activos), true);
-  const retN    = norm(kams.map(k=>metrics[k].retencion),   true);
-  const churnN  = norm(kams.map(k=>metrics[k].pct_churn),   false);
-  const riesgoN = norm(kams.map(k=>metrics[k].pct_riesgo),  false);
-  const ticketN = norm(kams.map(k=>metrics[k].ticket),      true);
-  const fcN     = norm(kams.map(k=>metrics[k].forecast),    true);
+  const bestTicketMes  = meses.reduce((a,b)=>tpm[a].tickets>tpm[b].tickets?a:b);
+  const bestPromMes    = meses.reduce((a,b)=>tpm[a].ticket_prom>tpm[b].ticket_prom?a:b);
 
-  // Pesos: 8 factores = 100%
-  const W={rev:0.25,ytd:0.20,activos:0.15,retencion:0.15,churn:0.10,riesgo:0.05,ticket:0.05,forecast:0.05};
+  // KPIs
+  const kpisHtml=`
+    <div class="kpi"><div class="kl">Promedio tickets/mes</div><div class="kv">${avgTickets}</div><div class="ks">período completo</div></div>
+    <div class="kpi" style="background:var(--blue-l)"><div class="kl" style="color:var(--blue)">Tickets/mes 2025</div><div class="kv" style="color:var(--blue)">${avgTickets25}</div><div class="ks" style="color:var(--blue)">promedio mensual</div></div>
+    <div class="kpi" style="background:var(--green-l)"><div class="kl" style="color:var(--green)">Tickets/mes 2026</div><div class="kv" style="color:var(--green)">${avgTickets26}</div><div class="ks" style="color:var(--green)">promedio mensual</div></div>
+    <div class="kpi"><div class="kl">Mayor actividad</div><div class="kv">${tpm[bestTicketMes].tickets}</div><div class="ks">${tpm[bestTicketMes].label}</div></div>
+    <div class="kpi" style="background:var(--forecast-l)"><div class="kl" style="color:var(--forecast)">Ticket prom. 2025</div><div class="kv" style="color:var(--forecast)">${fmt(avgProm25)}</div><div class="ks" style="color:var(--forecast)">por compra</div></div>
+    <div class="kpi" style="background:var(--primary-l)"><div class="kl" style="color:var(--primary)">Ticket prom. 2026</div><div class="kv" style="color:var(--primary)">${fmt(avgProm26)}</div><div class="ks" style="color:var(--primary)">por compra</div></div>`;
 
-  const scored=kams.map((k,i)=>({
-    k, ...metrics[k],
-    score: Math.round(
-      revN[i]*W.rev + ytdN[i]*W.ytd + actN[i]*W.activos +
-      retN[i]*W.retencion + churnN[i]*W.churn + riesgoN[i]*W.riesgo +
-      ticketN[i]*W.ticket + fcN[i]*W.forecast
-    ),
-    bars:{
-      'Revenue YTD':    [revN[i],   '#FA345E'],
-      'Crecimiento':    [ytdN[i],   '#146787'],
-      'Activos %':      [actN[i],   '#45C1AD'],
-      'Retención':      [retN[i],   '#B2A8E7'],
-      'Anti-Churn':     [churnN[i], '#97E89F'],
-      'Anti-Riesgo':    [riesgoN[i],'#FFB300'],
-      'Ticket prom.':   [ticketN[i],'#9B59B6'],
-      'Forecast H2':    [fcN[i],    '#E67E22'],
-    }
-  })).sort((a,b)=>b.score-a.score);
-
-  const medals=['🥇','🥈','🥉'];
-
-  const podiumHtml=scored.slice(0,3).map((r,i)=>{
-    const col=kamColors[r.k]||'#888';
-    return`<div style="flex:1;text-align:center;padding:${i===0?'0':'20px 0 0'}">
-      <div style="font-size:${i===0?'36px':'28px'};margin-bottom:4px">${medals[i]}</div>
-      <div style="display:inline-flex;align-items:center;justify-content:center;width:${i===0?'64px':'52px'};height:${i===0?'64px':'52px'};background:${col};border-radius:50%;margin-bottom:8px">
-        <span style="font-size:${i===0?'22px':'17px'};font-weight:700;color:#fff">${r.k}</span>
-      </div>
-      <div style="font-size:${i===0?'32px':'24px'};font-weight:700;color:${col}">${r.score}</div>
-      <div style="font-size:10px;color:var(--txt3);margin-top:2px">/ 100 pts</div>
-      <div style="font-size:11px;color:var(--txt2);margin-top:6px">${fmt(r.ytd26)} YTD</div>
-      <div style="font-size:10px;color:var(--txt3)">activos ${r.pct_activos}% · ret. ${r.retencion}%</div>
-    </div>`;
-  }).join('');
-
-  const tableHtml=scored.map((r,i)=>{
-    const col=kamColors[r.k]||'#888';
-    const scoreCol=r.score>=60?'var(--green)':r.score>=40?'var(--blue)':r.score>=25?'var(--amber)':'var(--red)';
-    const scoreBg =r.score>=60?'var(--green-l)':r.score>=40?'var(--blue-l)':r.score>=25?'var(--amber-l)':'var(--red-l)';
-    const barsHtml=Object.entries(r.bars).map(([lbl,[val,bc]])=>`
-      <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">
-        <span style="font-size:9px;color:var(--txt3);width:74px;text-align:right;flex-shrink:0">${lbl}</span>
-        <div style="flex:1;background:var(--bg3);border-radius:3px;height:5px">
-          <div style="width:${val}%;background:${bc};height:5px;border-radius:3px"></div>
-        </div>
-        <span style="font-size:9px;color:var(--txt3);width:22px;flex-shrink:0">${val}</span>
-      </div>`).join('');
+  // Tabla detalle
+  const tableHtml = meses.map((m,i)=>{
+    const v=tpm[m];
+    const is26=m.startsWith('2026');
+    const bwT=Math.round(v.tickets/maxTickets*100);
+    const bwP=Math.round(v.ticket_prom/maxProm*100);
     return`<tr>
-      <td style="text-align:center;font-size:14px">${i<3?medals[i]:(i+1)}</td>
-      <td><span style="font-size:13px;font-weight:700;padding:3px 10px;border-radius:8px;background:${col}22;color:${col}">${r.k}</span></td>
-      <td style="text-align:center"><span style="font-size:18px;font-weight:700;padding:4px 12px;border-radius:10px;background:${scoreBg};color:${scoreCol}">${r.score}</span></td>
-      <td style="padding:6px 8px">${barsHtml}</td>
-      <td style="text-align:right;font-weight:500">${fmt(r.ytd26)}</td>
-      <td style="text-align:right;color:${r.ytd_pct>=0?'var(--green)':'var(--red)'};font-weight:500">${r.ytd_pct>=0?'+':''}${r.ytd_pct}%</td>
-      <td style="text-align:right"><span style="font-size:11px;padding:2px 6px;border-radius:6px;background:var(--green-l);color:var(--green)">${r.pct_activos}%</span></td>
-      <td style="text-align:right"><span style="font-size:11px;padding:2px 6px;border-radius:6px;background:var(--amber-l);color:var(--amber)">${r.pct_riesgo}%</span></td>
-      <td style="text-align:right"><span style="font-size:11px;padding:2px 6px;border-radius:6px;background:var(--red-l);color:var(--red)">${r.pct_churn}%</span></td>
-      <td style="text-align:right"><span style="font-size:11px;padding:2px 6px;border-radius:6px;background:var(--blue-l);color:var(--blue)">${r.retencion}%</span></td>
-      <td style="text-align:right;color:var(--txt2)">${fmt(r.ticket)}</td>
-      <td style="text-align:right;color:var(--forecast);font-weight:500">${fmt(r.forecast)}</td>
+      <td style="text-align:center;color:var(--txt3);font-size:11px">${i+1}</td>
+      <td style="font-weight:500;color:${is26?'var(--primary)':'var(--txt2)'}">${v.label}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="flex:1;background:var(--bg3);border-radius:3px;height:7px">
+            <div style="width:${bwT}%;background:${is26?'var(--primary)':'#B2A8E7'};height:7px;border-radius:3px"></div>
+          </div>
+          <span style="font-size:12px;font-weight:500;color:${is26?'var(--primary)':'var(--txt)'};white-space:nowrap">${v.tickets}</span>
+        </div>
+      </td>
+      <td style="text-align:right;color:var(--txt2)">${fmtF(v.revenue)}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="flex:1;background:var(--bg3);border-radius:3px;height:7px">
+            <div style="width:${bwP}%;background:${is26?'#146787':'#45C1AD'};height:7px;border-radius:3px"></div>
+          </div>
+          <span style="font-size:12px;font-weight:500;color:${is26?'var(--blue)':'var(--teal)'};white-space:nowrap">${fmt(v.ticket_prom)}</span>
+        </div>
+      </td>
     </tr>`;
   }).join('');
 
-  document.getElementById('pane-ranking').innerHTML=`
-    <div class="card" style="margin-bottom:12px">
-      <div class="ct">Score ponderado — 8 factores</div>
-      <div style="font-size:11px;color:var(--txt3);margin-bottom:16px;line-height:1.8">
-        <span style="padding:2px 7px;border-radius:6px;background:#FA345E22;color:#FA345E;font-weight:500">Revenue YTD 25%</span> &nbsp;
-        <span style="padding:2px 7px;border-radius:6px;background:#14678722;color:#146787;font-weight:500">Crecimiento 20%</span> &nbsp;
-        <span style="padding:2px 7px;border-radius:6px;background:#45C1AD22;color:#45C1AD;font-weight:500">% Activos 15%</span> &nbsp;
-        <span style="padding:2px 7px;border-radius:6px;background:#B2A8E722;color:#7B6BC4;font-weight:500">Retención 15%</span> &nbsp;
-        <span style="padding:2px 7px;border-radius:6px;background:#97E89F22;color:#2E7D32;font-weight:500">Anti-Churn 10%</span> &nbsp;
-        <span style="padding:2px 7px;border-radius:6px;background:#FFB30022;color:#B86A00;font-weight:500">Anti-Riesgo 5%</span> &nbsp;
-        <span style="padding:2px 7px;border-radius:6px;background:#9B59B622;color:#6A3F9B;font-weight:500">Ticket 5%</span> &nbsp;
-        <span style="padding:2px 7px;border-radius:6px;background:#E67E2222;color:#B05A10;font-weight:500">Forecast H2 5%</span>
+  document.getElementById('pane-tickets').innerHTML=`
+    <div class="kpis" style="margin-bottom:16px">${kpisHtml}</div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="card">
+        <div class="ct">Cantidad de tickets por mes</div>
+        <div style="position:relative;height:200px"><canvas id="tk-bar"></canvas></div>
       </div>
-      <div style="display:flex;align-items:flex-end;justify-content:center;gap:20px;padding:20px 0 16px;border-bottom:.5px solid var(--border);margin-bottom:16px">
-        ${podiumHtml}
+      <div class="card">
+        <div class="ct">Ticket promedio por mes</div>
+        <div style="position:relative;height:200px"><canvas id="tk-prom"></canvas></div>
       </div>
     </div>
-    <div class="card" style="padding:0;overflow:hidden">
+    <div class="card">
+      <div class="ct">Detalle mes a mes</div>
       <div class="tbl-wrap">
         <table>
-          <colgroup>
-            <col style="width:34px"><col style="width:60px"><col style="width:72px">
-            <col style="min-width:240px">
-            <col style="width:80px"><col style="width:72px">
-            <col style="width:68px"><col style="width:68px"><col style="width:68px"><col style="width:72px">
-            <col style="width:76px"><col style="width:76px">
-          </colgroup>
+          <colgroup><col style="width:30px"><col style="width:70px"><col style="min-width:180px"><col style="width:110px"><col style="min-width:180px"></colgroup>
           <thead><tr>
             <th class="left">#</th>
-            <th class="left">KAM</th>
-            <th>Score</th>
-            <th class="left">Desglose (8 factores)</th>
-            <th>Rev. YTD</th>
-            <th>Crec. %</th>
-            <th>Activos</th>
-            <th>En riesgo</th>
-            <th>Churn</th>
-            <th>Retención</th>
-            <th>Ticket prom.</th>
-            <th style="color:var(--forecast)">Forecast H2</th>
+            <th class="left">Mes</th>
+            <th class="left">N° tickets</th>
+            <th>Revenue</th>
+            <th class="left">Ticket promedio</th>
           </tr></thead>
           <tbody>${tableHtml}</tbody>
         </table>
       </div>
+      <p class="note" style="margin-top:8px">Tickets = facturas emitidas (documentos positivos) · Ticket promedio = revenue / n° tickets</p>
+    </div>`;
+
+  requestAnimationFrame(()=>{
+    const labels=meses.map(m=>tpm[m].label);
+    const colors=meses.map(m=>m.startsWith('2026')?'#FA345E':'#B2A8E7');
+    const colorsP=meses.map(m=>m.startsWith('2026')?'#146787':'#45C1AD');
+    const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.raw}}},scales:{x:{ticks:{autoSkip:true,maxTicksLimit:12,font:{size:9}},grid:{display:false}},y:{ticks:{font:{size:9}},grid:{color:'rgba(128,128,128,.06)'}}}};
+    const optsF={...opts,scales:{...opts.scales,y:{ticks:{callback:v=>fmt(v),font:{size:9}},grid:{color:'rgba(128,128,128,.06)'}}}};
+    const ctx1=document.getElementById('tk-bar');
+    if(ctx1){if(charts['tk-bar'])charts['tk-bar'].destroy();
+      charts['tk-bar']=new Chart(ctx1,{type:'bar',data:{labels,datasets:[{data:meses.map(m=>tpm[m].tickets),backgroundColor:colors,borderRadius:3}]},options:opts});}
+    const ctx2=document.getElementById('tk-prom');
+    if(ctx2){if(charts['tk-prom'])charts['tk-prom'].destroy();
+      charts['tk-prom']=new Chart(ctx2,{type:'bar',data:{labels,datasets:[{data:meses.map(m=>tpm[m].ticket_prom),backgroundColor:colorsP,borderRadius:3}]},options:optsF});}
+  });
+}
+
+// Arranque
+if(sessionStorage.getItem('kam_auth')==='1') loadData();
+</script>
+</body>
+</html>// ── Tab Tickets ─────────────────────────────────────────────────────────────
+function buildTickets(){
+  const td = FULL_DATA.tickets_data;
+  const months = FULL_DATA.tickets_months;
+  if(!td){ document.getElementById('pane-tickets').innerHTML='<div style="padding:20px;color:var(--txt3)">Sin datos de tickets</div>'; return; }
+
+  const kams = FULL_DATA.kams.filter(k=>td[k]&&FULL_DATA[k].cartera.total>1000000);
+  const kamColors={'BC':'#FA345E','BG':'#146787','LJ':'#45C1AD','CF':'#B2A8E7','AA':'#97E89F','DA':'#FFB300'};
+  const MN_LABELS = months.map(m=>{const[y,mo]=m.split('-');const n=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return n[+mo]+' '+y.slice(2);});
+
+  // KPIs por KAM
+  const kpiHtml = kams.map(k=>{
+    const col=kamColors[k]||'#888';
+    const avgT = td[k].avg_tickets;
+    const avgP = td[k].avg_ticket_prom;
+    return`<div class="kpi" style="border-left:3px solid ${col}">
+      <div class="kl" style="color:${col};font-weight:600">${k}</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:4px">
+        <div>
+          <div style="font-size:20px;font-weight:600;color:var(--txt)">${avgT}</div>
+          <div class="ks">tickets/mes prom.</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:14px;font-weight:500;color:${col}">${fmt(avgP)}</div>
+          <div class="ks">ticket promedio</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('pane-tickets').innerHTML=`
+    <div class="kpis" style="margin-bottom:16px">${kpiHtml}</div>
+
+    <div class="g2" style="margin-bottom:12px">
+      <div class="card">
+        <div class="ct">Cantidad de tickets por mes — por KAM</div>
+        <div style="position:relative;height:230px"><canvas id="tk-count"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Ticket promedio mensual — por KAM</div>
+        <div style="position:relative;height:230px"><canvas id="tk-prom"></canvas></div>
+      </div>
     </div>
-    <p class="note" style="margin-top:8px">
-      Score 0–100 normalizado dentro del equipo · Verde ≥60 · Azul ≥40 · Naranja ≥25 · Rojo &lt;25<br>
-      Retención = clientes con compra en 2025 que siguen comprando en 2026 · Anti-Riesgo = menor % en riesgo = mejor score
-    </p>`;
+
+    <div class="card">
+      <div class="ct">Detalle mensual por KAM</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px" id="tk-kam-sel">
+        ${kams.map(k=>`<button onclick="tkSelKam('${k}')" id="tkb-${k}"
+          style="font-size:11px;padding:4px 10px;border-radius:8px;border:.5px solid ${kamColors[k]||'#888'};background:${k===kams[0]?(kamColors[k]||'#888')+'22':'none'};color:${kamColors[k]||'#888'};cursor:pointer;font-weight:500">${k}</button>`).join('')}
+      </div>
+      <div id="tk-detail-table"></div>
+    </div>`;
+
+  requestAnimationFrame(()=>{
+    const opts=(title,cb)=>({responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,padding:8}},
+               tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${cb(c.raw)}`}}},
+      scales:{x:{ticks:{autoSkip:true,maxTicksLimit:12,font:{size:9}},grid:{display:false}},
+              y:{ticks:{callback:v=>cb(v),font:{size:9}},grid:{color:'rgba(128,128,128,.06)'}}}});
+
+    // Gráfico cantidad tickets
+    const ctx1=document.getElementById('tk-count');
+    if(ctx1){
+      if(charts['tk-count'])charts['tk-count'].destroy();
+      charts['tk-count']=new Chart(ctx1,{type:'line',data:{
+        labels:MN_LABELS,
+        datasets:kams.map(k=>({
+          label:k, data:td[k].tickets_por_mes,
+          borderColor:kamColors[k]||'#888',
+          backgroundColor:(kamColors[k]||'#888')+'18',
+          fill:false, tension:0.3,
+          pointRadius:3, borderWidth:2,
+        }))
+      },options:opts('Tickets',v=>Math.round(v))});
+    }
+
+    // Gráfico ticket promedio
+    const ctx2=document.getElementById('tk-prom');
+    if(ctx2){
+      if(charts['tk-prom'])charts['tk-prom'].destroy();
+      charts['tk-prom']=new Chart(ctx2,{type:'line',data:{
+        labels:MN_LABELS,
+        datasets:kams.map(k=>({
+          label:k, data:td[k].ticket_prom_mes,
+          borderColor:kamColors[k]||'#888',
+          backgroundColor:(kamColors[k]||'#888')+'18',
+          fill:false, tension:0.3,
+          pointRadius:3, borderWidth:2,
+        }))
+      },options:opts('Ticket prom.',v=>fmt(v))});
+    }
+
+    tkSelKam(kams[0]);
+  });
+}
+
+let tkKamSel = null;
+function tkSelKam(k){
+  tkKamSel = k;
+  const td = FULL_DATA.tickets_data;
+  const months = FULL_DATA.tickets_months;
+  const kamColors={'BC':'#FA345E','BG':'#146787','LJ':'#45C1AD','CF':'#B2A8E7','AA':'#97E89F','DA':'#FFB300'};
+  const col = kamColors[k]||'#888';
+
+  // Actualizar botones
+  FULL_DATA.kams.filter(k2=>td[k2]&&FULL_DATA[k2].cartera.total>1000000).forEach(k2=>{
+    const btn=document.getElementById('tkb-'+k2);
+    if(btn){btn.style.background=k2===k?(kamColors[k2]||'#888')+'22':'none';btn.style.fontWeight=k2===k?'600':'400';}
+  });
+
+  const MN_LABELS = months.map(m=>{const[y,mo]=m.split('-');const n=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return n[+mo]+' '+y.slice(2);});
+  const ticks = td[k].tickets_por_mes;
+  const proms = td[k].ticket_prom_mes;
+  const maxT = Math.max(...ticks);
+
+  const rows = months.map((m,i)=>{
+    const is26 = m.startsWith('2026');
+    const bw = maxT>0?Math.round(ticks[i]/maxT*100):0;
+    return`<tr>
+      <td style="font-size:11px;color:${is26?col:'var(--txt2)'};font-weight:${is26?600:400}">${MN_LABELS[i]}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="flex:1;background:var(--bg3);border-radius:3px;height:6px">
+            <div style="width:${bw}%;background:${col};height:6px;border-radius:3px;opacity:${is26?1:.6}"></div>
+          </div>
+          <span style="font-size:13px;font-weight:600;color:${is26?col:'var(--txt)'};width:36px;text-align:right">${ticks[i]||'—'}</span>
+        </div>
+      </td>
+      <td style="text-align:right;font-size:12px;font-weight:500;color:${is26?col:'var(--txt2)'}">${proms[i]>0?fmt(proms[i]):'—'}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('tk-detail-table').innerHTML=`
+    <table style="width:100%;border-collapse:collapse">
+      <colgroup><col style="width:70px"><col style="min-width:200px"><col style="width:120px"></colgroup>
+      <thead><tr style="background:var(--bg2)">
+        <th class="left" style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase">Mes</th>
+        <th class="left" style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase">Nº Tickets</th>
+        <th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right">Ticket Promedio</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
 }
 
 // Arranque
