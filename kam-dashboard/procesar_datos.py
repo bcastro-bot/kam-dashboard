@@ -293,7 +293,7 @@ if __name__ == "__main__":
         print(f"  Procesando {kam}: {df_kam['Cliente'].nunique()} clientes...")
         output[kam] = build_kam_data(df_kam, kam)
 
-    # ── Productos por categoría: revenue mensual por KAM ────────────────────────
+    # ── Productos por categoría: revenue mensual + tickets por KAM ──────────────
     all_months_sorted = sorted(df["Mes"].unique().tolist())
     productos_data = {}
     for kam in kams_presentes:
@@ -301,6 +301,7 @@ if __name__ == "__main__":
         if len(df_kam) == 0:
             continue
         cat_monthly = df_kam.groupby(["Categoria","Mes"])["Precio"].sum().reset_index()
+        cat_counts = df_kam[df_kam["Precio"] > 0].groupby("Categoria")["Precio"].agg(["sum","count"]).reset_index()
         cats = sorted(df_kam["Categoria"].unique().tolist())
         cat_data = {}
         for cat in cats:
@@ -310,7 +311,11 @@ if __name__ == "__main__":
                 vals.append(int(row["Precio"].values[0]) if len(row) else 0)
             total = sum(vals)
             if total > 0:
-                cat_data[cat] = {"vals": vals, "total": total}
+                count_row = cat_counts[cat_counts["Categoria"]==cat]
+                n_tickets = int(count_row["count"].values[0]) if len(count_row) else 0
+                rev_positivo = int(count_row["sum"].values[0]) if len(count_row) else total
+                ticket_prom = int(rev_positivo / n_tickets) if n_tickets > 0 else 0
+                cat_data[cat] = {"vals": vals, "total": total, "tickets": n_tickets, "ticket_prom": ticket_prom}
         productos_data[kam] = cat_data
 
     output["productos_data"] = productos_data
