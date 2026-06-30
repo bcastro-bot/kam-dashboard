@@ -860,66 +860,55 @@ function buildTickets(){
   });
   html += '</div><div id="tk-detail"></div></div>';
 
-  // Sección: Ventas por categoría de producto
+  // Sección: estadísticas por categoría de producto — filtrado por KAM activo
   var pd = FULL_DATA.productos_data;
-  var pmonths = FULL_DATA.productos_months;
-  if(pd && pmonths){
+  if(pd && pd[curKAM]){
     var catColors = {'Puntos':'#FA345E','Gift Card':'#146787','Software':'#45C1AD','Agencia':'#B2A8E7','Comisión':'#97E89F','Efectivo':'#FFB300','Fee SaaS':'#9B59B6','Plataforma':'#E67E22','Ajuste':'#888','Otros':'#999','Sin clasificar':'#bbb'};
+    var catK = pd[curKAM];
+    var sortedCats = Object.keys(catK).sort(function(a,b){ return catK[b].total - catK[a].total; });
+    var grandTotal = sortedCats.reduce(function(s,c){ return s + catK[c].total; }, 0);
+    var maxTotal = sortedCats.length ? catK[sortedCats[0]].total : 1;
 
-    html += '<div class="card"><div class="ct">Ventas por tipo de producto — todos los KAM</div>';
-    html += '<p class="note" style="margin-bottom:10px">Revenue neto acumulado por categoría de producto</p>';
-
-    var globalCats = {};
-    kams.forEach(function(k){
-      if(!pd[k]) return;
-      Object.keys(pd[k]).forEach(function(cat){
-        globalCats[cat] = (globalCats[cat] || 0) + pd[k][cat].total;
-      });
-    });
-    var sortedCats = Object.keys(globalCats).sort(function(a,b){ return globalCats[b]-globalCats[a]; });
-    var maxCatTotal = sortedCats.length ? globalCats[sortedCats[0]] : 1;
-    var grandTotal = sortedCats.reduce(function(s,c){ return s+globalCats[c]; }, 0);
-
-    html += '<div style="margin-bottom:16px">';
-    sortedCats.forEach(function(cat){
-      var col = catColors[cat] || '#888';
-      var val = globalCats[cat];
-      var pct = grandTotal > 0 ? Math.round(val/grandTotal*100) : 0;
-      var bw = Math.round(val/maxCatTotal*100);
-      html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">';
-      html += '<span style="font-size:12px;color:var(--txt2);width:90px;flex-shrink:0">' + cat + '</span>';
-      html += '<div style="flex:1;background:var(--bg3);border-radius:4px;height:14px;position:relative">';
-      html += '<div style="width:' + bw + '%;background:' + col + ';height:14px;border-radius:4px"></div></div>';
-      html += '<span style="font-size:12px;font-weight:600;color:' + col + ';width:90px;text-align:right;flex-shrink:0">' + fmt(val) + '</span>';
-      html += '<span style="font-size:11px;color:var(--txt3);width:40px;text-align:right;flex-shrink:0">' + pct + '%</span>';
-      html += '</div>';
-    });
-    html += '</div>';
-
+    html += '<div class="card"><div class="ct">Ventas por tipo de producto — ' + curKAM + '</div>';
+    html += '<p class="note" style="margin-bottom:14px">% de participación y ticket promedio por categoría (histórico)</p>';
     html += '<div class="tbl-wrap"><table style="width:100%;border-collapse:collapse">';
-    html += '<thead><tr style="background:var(--bg2)"><th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:left;border-bottom:0.5px solid var(--border)">KAM</th>';
+    html += '<thead><tr style="background:var(--bg2)">';
+    html += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:left;border-bottom:0.5px solid var(--border)">Categoría</th>';
+    html += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:left;border-bottom:0.5px solid var(--border)">% Participación</th>';
+    html += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right;border-bottom:0.5px solid var(--border)">Revenue</th>';
+    html += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right;border-bottom:0.5px solid var(--border)">N Tickets</th>';
+    html += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right;border-bottom:0.5px solid var(--border)">Ticket Promedio</th>';
+    html += '</tr></thead><tbody>';
+
     sortedCats.forEach(function(cat){
       var col = catColors[cat] || '#888';
-      html += '<th style="padding:7px 8px;font-size:10px;font-weight:600;color:' + col + ';text-transform:uppercase;text-align:right;border-bottom:0.5px solid var(--border)">' + cat + '</th>';
+      var v = catK[cat];
+      var pct = grandTotal > 0 ? Math.round(v.total/grandTotal*100) : 0;
+      var bw = Math.round(v.total/maxTotal*100);
+      html += '<tr>';
+      html += '<td style="padding:9px 8px;font-size:12px;font-weight:600;color:' + col + ';border-bottom:0.5px solid var(--border)">' + cat + '</td>';
+      html += '<td style="padding:9px 8px;border-bottom:0.5px solid var(--border)">';
+      html += '<div style="display:flex;align-items:center;gap:8px">';
+      html += '<div style="flex:1;background:var(--bg3);border-radius:4px;height:12px">';
+      html += '<div style="width:' + bw + '%;background:' + col + ';height:12px;border-radius:4px"></div></div>';
+      html += '<span style="font-size:12px;font-weight:600;color:' + col + ';width:36px;text-align:right">' + pct + '%</span>';
+      html += '</div></td>';
+      html += '<td style="text-align:right;padding:9px 8px;font-size:13px;font-weight:600;color:var(--txt);border-bottom:0.5px solid var(--border)">' + fmt(v.total) + '</td>';
+      html += '<td style="text-align:right;padding:9px 8px;font-size:12px;color:var(--txt2);border-bottom:0.5px solid var(--border)">' + (v.tickets || '—') + '</td>';
+      html += '<td style="text-align:right;padding:9px 8px;font-size:12px;font-weight:500;color:' + col + ';border-bottom:0.5px solid var(--border)">' + (v.ticket_prom ? fmt(v.ticket_prom) : '—') + '</td>';
+      html += '</tr>';
     });
-    html += '<th style="padding:7px 8px;font-size:10px;font-weight:700;color:var(--txt);text-transform:uppercase;text-align:right;border-bottom:0.5px solid var(--border)">Total</th></tr></thead><tbody>';
 
-    kams.forEach(function(k){
-      if(!pd[k]) return;
-      var col = kamColors[k] || '#888';
-      var rowTotal = 0;
-      html += '<tr><td style="padding:7px 8px;font-size:12px;font-weight:600;color:' + col + ';border-bottom:0.5px solid var(--border)">' + k + '</td>';
-      sortedCats.forEach(function(cat){
-        var v = pd[k][cat] ? pd[k][cat].total : 0;
-        rowTotal += v;
-        html += '<td style="text-align:right;padding:7px 8px;font-size:12px;color:' + (v>0?'var(--txt2)':'var(--txt3)') + ';border-bottom:0.5px solid var(--border)">' + (v>0?fmt(v):'—') + '</td>';
-      });
-      html += '<td style="text-align:right;padding:7px 8px;font-size:12px;font-weight:700;color:var(--txt);border-bottom:0.5px solid var(--border)">' + fmt(rowTotal) + '</td></tr>';
-    });
+    html += '<tr style="background:var(--bg2);border-top:1.5px solid var(--border)">';
+    html += '<td style="padding:9px 8px;font-size:12px;font-weight:700;color:var(--txt)">TOTAL</td>';
+    html += '<td style="padding:9px 8px;font-size:12px;font-weight:700;color:var(--txt)">100%</td>';
+    html += '<td style="text-align:right;padding:9px 8px;font-size:13px;font-weight:700;color:var(--txt)">' + fmt(grandTotal) + '</td>';
+    html += '<td></td><td></td>';
+    html += '</tr>';
     html += '</tbody></table></div></div>';
   }
 
-  el.innerHTML = html;
+    el.innerHTML = html;
   tkSelKam(kams.indexOf(curKAM) >= 0 ? curKAM : kams[0]);
 }
 
