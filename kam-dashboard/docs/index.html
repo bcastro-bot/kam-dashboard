@@ -745,6 +745,71 @@ function buildEquipo(){
       <div style="position:relative;height:220px"><canvas id="eq-bar"></canvas></div>
     </div>`;
 
+  // ── Forecast equipo ────────────────────────────────────────────────────────
+  var fMonths = FULL_DATA[kamsMain[0]].forecast_months;
+  var fLabels = fMonths.map(function(m){
+    var p=m.split('-'); var n=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    return n[+p[1]]+' '+p[0].slice(2)+'*';
+  });
+  var fVals = fMonths.map(function(m,i){
+    return kamsMain.reduce(function(s,k){ return s+(FULL_DATA[k].cartera.forecast_vals[i]||0); },0);
+  });
+  var h2_25_vals = fMonths.map(function(m){
+    var m25 = m.replace('2026','2025');
+    return kamsMain.reduce(function(s,k){
+      var idx = FULL_DATA[k].months.indexOf(m25);
+      return s + (idx>=0 ? FULL_DATA[k].cartera.vals[idx] : 0);
+    },0);
+  });
+  var fcTotal = fVals.reduce(function(a,b){return a+b;},0);
+  var h2Total = h2_25_vals.reduce(function(a,b){return a+b;},0);
+  var fcGrowth = h2Total>0 ? ((fcTotal-h2Total)/h2Total*100).toFixed(1) : 0;
+
+  var fcHtml = '<div class="card" style="margin-top:10px">';
+  fcHtml += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">';
+  fcHtml += '<div class="ct" style="margin:0">Forecast H2 2026 — Equipo consolidado</div>';
+  fcHtml += '<span class="forecast-badge">H2 2025 × 1.35 por KAM</span>';
+  fcHtml += '</div>';
+  fcHtml += '<div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">';
+  fcHtml += '<div class="kpi" style="background:var(--forecast-l);border:.5px solid var(--forecast-b);flex:1;min-width:140px">';
+  fcHtml += '<div class="kl" style="color:var(--forecast)">Forecast H2 2026</div>';
+  fcHtml += '<div class="kv" style="color:var(--forecast)">' + fmt(fcTotal) + '</div>';
+  fcHtml += '<div class="ks" style="color:var(--forecast)">Jul–Dic 2026 equipo</div></div>';
+  fcHtml += '<div class="kpi" style="flex:1;min-width:140px">';
+  fcHtml += '<div class="kl">H2 2025 real</div>';
+  fcHtml += '<div class="kv">' + fmt(h2Total) + '</div>';
+  fcHtml += '<div class="ks">base del forecast</div></div>';
+  fcHtml += '<div class="kpi" style="flex:1;min-width:140px">';
+  fcHtml += '<div class="kl">Crecimiento esperado</div>';
+  fcHtml += '<div class="kv" style="color:var(--green)">+' + fcGrowth + '%</div>';
+  fcHtml += '<div class="ks">H2 2025 → H2 2026</div></div>';
+  fcHtml += '</div>';
+  fcHtml += '<div class="tbl-wrap"><table style="width:100%;border-collapse:collapse">';
+  fcHtml += '<thead><tr style="background:var(--bg2)">';
+  fcHtml += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:left;border-bottom:0.5px solid var(--border)">Mes</th>';
+  fcHtml += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right;border-bottom:0.5px solid var(--border)">H2 2025 real</th>';
+  fcHtml += '<th style="padding:7px 8px;font-size:10px;font-weight:600;color:var(--forecast);text-transform:uppercase;text-align:right;border-bottom:0.5px solid var(--border)">Forecast 2026</th>';
+  fcHtml += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right;border-bottom:0.5px solid var(--border)">Diferencia</th>';
+  fcHtml += '</tr></thead><tbody>';
+  fMonths.forEach(function(m,i){
+    var diff = fVals[i] - h2_25_vals[i];
+    fcHtml += '<tr>';
+    fcHtml += '<td style="padding:8px;font-size:12px;color:var(--txt2);border-bottom:0.5px solid var(--border)">' + fLabels[i] + '</td>';
+    fcHtml += '<td style="text-align:right;padding:8px;font-size:12px;color:var(--txt2);border-bottom:0.5px solid var(--border)">' + fmt(h2_25_vals[i]) + '</td>';
+    fcHtml += '<td style="text-align:right;padding:8px;font-size:13px;font-weight:600;color:var(--forecast);border-bottom:0.5px solid var(--border)">' + fmt(fVals[i]) + '</td>';
+    fcHtml += '<td style="text-align:right;padding:8px;font-size:12px;color:var(--green);border-bottom:0.5px solid var(--border)">+' + fmt(diff) + '</td>';
+    fcHtml += '</tr>';
+  });
+  fcHtml += '<tr style="background:var(--bg2);border-top:1.5px solid var(--border)">';
+  fcHtml += '<td style="padding:8px;font-size:12px;font-weight:700;color:var(--txt)">TOTAL H2</td>';
+  fcHtml += '<td style="text-align:right;padding:8px;font-size:13px;font-weight:700;color:var(--txt)">' + fmt(h2Total) + '</td>';
+  fcHtml += '<td style="text-align:right;padding:8px;font-size:13px;font-weight:700;color:var(--forecast)">' + fmt(fcTotal) + '</td>';
+  fcHtml += '<td style="text-align:right;padding:8px;font-size:12px;font-weight:600;color:var(--green)">+' + fmt(fcTotal-h2Total) + '</td>';
+  fcHtml += '</tr>';
+  fcHtml += '</tbody></table></div></div>';
+
+  document.getElementById('pane-equipo').innerHTML += fcHtml;
+
   requestAnimationFrame(()=>{
     // Gráfico pie
     const ctxP=document.getElementById('eq-pie');
