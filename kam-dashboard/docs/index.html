@@ -686,7 +686,7 @@ function buildEquipo(){
   const kamsMain=kams.filter(k=>FULL_DATA[k].cartera.total>1000000);
   const totalRev=kamsMain.reduce((s,k)=>s+FULL_DATA[k].cartera.total,0);
   const totalClientes=kamsMain.reduce((s,k)=>s+Object.keys(FULL_DATA[k].clients).length,0);
-  const totalFc=kamsMain.reduce((s,k)=>s+FULL_DATA[k].cartera.forecast_total,0);
+  const totalFc=kamsMain.reduce((s,k)=>s+(FULL_DATA[k].cartera.forecast_total||0)*1000,0);
   const totalYtd25=kamsMain.reduce((s,k)=>s+(FULL_DATA[k].cartera.ytd25||0),0);
   const totalYtd26=kamsMain.reduce((s,k)=>s+(FULL_DATA[k].cartera.ytd26||0),0);
   const teamYtdPct=totalYtd25>0?((totalYtd26-totalYtd25)/totalYtd25*100).toFixed(1):null;
@@ -702,7 +702,7 @@ function buildEquipo(){
     const cnt={activo:0,nuevo:0,'en riesgo':0,churn:0};
     cl.forEach(c=>cnt[c.status]=(cnt[c.status]||0)+1);
     const share=totalRev>0?(d.cartera.total/totalRev*100).toFixed(1):0;
-    return{kam:k,total:d.cartera.total,clientes:cl.length,ytd_pct:d.cartera.ytd_pct,fc:d.cartera.forecast_total,share,cnt};
+    return{kam:k,total:d.cartera.total,clientes:cl.length,ytd_pct:d.cartera.ytd_pct,fc:(d.cartera.forecast_total||0)*1000,share,cnt};
   }).sort((a,b)=>b.total-a.total);
 
   // Meses comunes para gráfico equipo
@@ -710,7 +710,7 @@ function buildEquipo(){
   const labels=FULL_DATA[kamsMain[0]].month_labels;
   const hc=FULL_DATA[kamsMain[0]].hist_count;
   const teamVals=months.map((_,i)=>kamsMain.reduce((s,k)=>{
-    const v=FULL_DATA[k].cartera.vals[i]||0; return s+v;
+    const v=(FULL_DATA[k].cartera.vals[i]||0)*1000; return s+v;
   },0));
 
   // Colores por KAM
@@ -796,13 +796,13 @@ function buildEquipo(){
     return n[+p[1]]+' '+p[0].slice(2)+'*';
   });
   var fVals = fMonths.map(function(m,i){
-    return kamsMain.reduce(function(s,k){ return s+(FULL_DATA[k].cartera.forecast_vals[i]||0); },0);
+    return kamsMain.reduce(function(s,k){ return s+(FULL_DATA[k].cartera.forecast_vals[i]||0)*1000; },0);
   });
   var h2_25_vals = fMonths.map(function(m){
     var m25 = m.replace('2026','2025');
     return kamsMain.reduce(function(s,k){
       var idx = FULL_DATA[k].months.indexOf(m25);
-      return s + (idx>=0 ? FULL_DATA[k].cartera.vals[idx] : 0);
+      return s + (idx>=0 ? (FULL_DATA[k].cartera.vals[idx]||0)*1000 : 0);
     },0);
   });
   var fcTotal = fVals.reduce(function(a,b){return a+b;},0);
