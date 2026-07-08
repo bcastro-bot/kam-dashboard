@@ -174,7 +174,6 @@ def load_data(paths):
     combined = pd.concat(frames, ignore_index=True)
 
     # 3. Separar clientes activos vs perdidos
-    # Activo del KAM = compró desde CORTE_ACTIVO en adelante
     compras_recientes = combined[(combined["Mes"] >= CORTE_ACTIVO) & (combined["Precio"] > 0)]
     ruts_activos = set(compras_recientes["RUT_clean"].unique())
 
@@ -184,6 +183,26 @@ def load_data(paths):
         axis=1
     )
 
+    # 4. Agregar clientes sin ninguna factura → también PERDIDOS
+    # Estos clientes están en hoja Clientes pero no tienen ningún registro en facturas
+    ruts_en_facturas = set(combined["RUT_clean"].unique())
+    ruts_sin_factura = {r for r in rut_to_panel if r not in ruts_en_facturas and r and r != "nan"}
+
+    if ruts_sin_factura:
+        print(f"    → Agregando {len(ruts_sin_factura)} clientes sin facturas a PERDIDOS")
+        filas_sin_factura = []
+        for rut in ruts_sin_factura:
+            filas_sin_factura.append({
+                "Kam": "PERDIDOS",
+                "Cliente": rut_to_panel.get(rut, rut),
+                "RUT_clean": rut,
+                "Precio": 0,
+                "Mes": "2024-01",   # mes placeholder — no afecta revenue
+                "Categoria": "Sin clasificar"
+            })
+        df_sin = pd.DataFrame(filas_sin_factura)
+        combined = pd.concat([combined, df_sin], ignore_index=True)
+
     # Filtrar solo KAMs válidos
     combined = combined[combined["Kam"].isin(VALID_KAMS)]
 
@@ -192,6 +211,8 @@ def load_data(paths):
     for kam, n in dist.items():
         rev = combined[(combined["Kam"]==kam) & (combined["Precio"]>0)]["Precio"].sum()
         print(f"    {kam}: {n} clientes · ${rev:,.0f}")
+    perdidos_total = combined[combined["Kam"]=="PERDIDOS"]["RUT_clean"].nunique()
+    print(f"    PERDIDOS: {perdidos_total} clientes · $0 (sin factura) + con factura solo 2024")
 
     return combined
 
