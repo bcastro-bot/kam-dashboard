@@ -79,15 +79,42 @@ def pct(a, b):
     return round((a - b) / b * 100, 1)
 
 # ── Carga ──────────────────────────────────────────────────────────────────────
+def build_kam_map(path):
+    """Lee la hoja Clientes y construye un mapa Cliente → VENDEDOR ACTUAL."""
+    try:
+        import openpyxl
+        wb = openpyxl.load_workbook(path, read_only=True)
+        if "Clientes" not in wb.sheetnames:
+            return {}
+        df_cl = pd.read_excel(path, sheet_name="Clientes")
+        df_cl.columns = [str(c).strip() for c in df_cl.columns]
+        if "PANEL" not in df_cl.columns or "VENDEDOR ACTUAL" not in df_cl.columns:
+            return {}
+        df_cl = df_cl[df_cl["VENDEDOR ACTUAL"].notna()].copy()
+        df_cl["PANEL"] = df_cl["PANEL"].astype(str).str.strip()
+        mapa = dict(zip(df_cl["PANEL"], df_cl["VENDEDOR ACTUAL"].astype(str).str.strip()))
+        print(f"    → Mapa KAM: {len(mapa)} clientes desde hoja Clientes")
+        return mapa
+    except Exception as e:
+        print(f"  ⚠ No se pudo leer hoja Clientes: {e}")
+        return {}
+
 def load_files(paths):
     frames = []
+    kam_map = {}  # Cliente → KAM actual (desde hoja Clientes)
+
     for p in paths:
         p = Path(p)
         if not p.exists():
             print(f"  ✗ No encontré: {p}"); continue
         print(f"  ✓ Cargando {p.name}...")
 
-        # Detectar hoja
+        # Intentar cargar mapa KAM desde hoja Clientes
+        mapa = build_kam_map(p)
+        if mapa:
+            kam_map.update(mapa)
+
+        # Detectar hoja de facturas
         import openpyxl
         wb = openpyxl.load_workbook(p, read_only=True)
         sheet = None
@@ -95,7 +122,7 @@ def load_files(paths):
             if s in wb.sheetnames:
                 sheet = s; break
         if not sheet:
-            print(f"  ⚠ No encontré hojas conocidas en {p.name}. Hojas disponibles: {wb.sheetnames}"); continue
+            print(f"  ⚠ No encontré hojas conocidas en {p.name}. Disponibles: {wb.sheetnames}"); continue
 
         df = pd.read_excel(p, sheet_name=sheet)
         df.columns = [str(c).strip() for c in df.columns]
@@ -107,7 +134,7 @@ def load_files(paths):
         if "Kam" not in df.columns:
             print(f"  ⚠ Sin columna KAM en {p.name}"); continue
 
-        # Normalizar columna precio
+        # Normalizar precio
         for col in ["Precio","Prrecio","precio","PRECIO"]:
             if col in df.columns:
                 df = df.rename(columns={col:"Precio"}); break
@@ -115,6 +142,14 @@ def load_files(paths):
         df = df[df["Precio"].notna() & (df["Precio"] != 0)].copy()
         df["Fecha Emision"] = pd.to_datetime(df["Fecha Emision"])
         df["Mes"] = df["Fecha Emision"].dt.to_period("M").astype(str)
+
+        # Reasignar KAM usando hoja Clientes (fuente de verdad)
+        if kam_map:
+            df["Cliente_clean"] = df["Cliente"].astype(str).str.strip()
+            df["Kam"] = df["Cliente_clean"].map(kam_map).fillna(df["Kam"])
+            asignados = df["Cliente_clean"].isin(kam_map).sum()
+            print(f"    → {asignados}/{len(df)} registros reasignados con VENDEDOR ACTUAL")
+
         df = df[df["Kam"].isin(VALID_KAMS)]
 
         if "Producto" in df.columns:
@@ -123,11 +158,16 @@ def load_files(paths):
             df["Categoria"] = "Sin clasificar"
 
         frames.append(df[["Kam","Cliente","Precio","Mes","Categoria"]])
-        print(f"    → {len(df)} registros · hoja: {sheet}")
+        print(f"    → {len(df)} registros válidos · hoja: {sheet}")
 
     if not frames:
         print("ERROR: No se cargó ningún archivo."); sys.exit(1)
-    return pd.concat(frames, ignore_index=True)
+
+    combined = pd.concat(frames, ignore_index=True)
+    print("\n  Distribución por KAM (con asignación correcta):")
+    for kam, n in combined[combined["Precio"]>0].groupby("Kam")["Precio"].sum().sort_values(ascending=False).items():
+        print(f"    {kam}: ${n:,.0f}")
+    return combined
 
 # ── Dataset por KAM ────────────────────────────────────────────────────────────
 def build_kam_data(df_kam):
