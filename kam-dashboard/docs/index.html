@@ -291,9 +291,18 @@ function renderKPIs(){
   cv.forEach(c=>counts[c.status]=(counts[c.status]||0)+1);
   const firstLabel=DATA.month_labels[0]||'Ene 25';
   const lastLabel=DATA.month_labels[DATA.hist_count-1]||'—';
+  // Etiqueta dinámica YoY según años disponibles
+  const years = DATA.years || ['2025','2026'];
+  const prevY = years[years.length-2] || '2025';
+  const curY  = years[years.length-1] || '2026';
+  // Revenue por año (si existe en cartera)
+  const revPrevY = C.rev_by_year ? (C.rev_by_year[prevY]||0) : C.ytd25||0;
+  const revCurY  = C.rev_by_year ? (C.rev_by_year[curY]||0)  : C.ytd26||0;
+  const ytdLabel = 'YTD '+curY+' vs '+prevY;
+
   document.getElementById('kpis').innerHTML=`
     <div class="kpi"><div class="kl">Revenue histórico</div><div class="kv">${fmt(C.total)}</div><div class="ks">${firstLabel} – ${lastLabel}</div></div>
-    <div class="kpi"><div class="kl">YTD vs 2025</div><div class="kv" style="color:${pCol(C.ytd_pct)}">${fmtP(C.ytd_pct)}</div><div class="ks">${fmt(C.ytd25)} → ${fmt(C.ytd26)}</div></div>
+    <div class="kpi"><div class="kl">${ytdLabel}</div><div class="kv" style="color:${pCol(C.ytd_pct)}">${fmtP(C.ytd_pct)}</div><div class="ks">${fmt(C.ytd25)} → ${fmt(C.ytd26)}</div></div>
     <div class="kpi" style="background:var(--forecast-l)"><div class="kl" style="color:var(--forecast)">Forecast H2 2026</div><div class="kv" style="color:var(--forecast)">${fmt(C.forecast_total)}</div><div class="ks" style="color:var(--forecast)">H2 2025 × 1.35</div></div>
     <div class="kpi" style="background:var(--green-l)"><div class="kl" style="color:var(--green)">Activos + nuevos</div><div class="kv" style="color:var(--green)">${counts.activo+counts.nuevo}</div><div class="ks" style="color:var(--green)">${Math.round((counts.activo+counts.nuevo)/cv.length*100)}% cartera</div></div>
     <div class="kpi" style="background:var(--amber-l)"><div class="kl" style="color:var(--amber)">En riesgo</div><div class="kv" style="color:var(--amber)">${counts['en riesgo']}</div><div class="ks" style="color:var(--amber)">90–180 días sin compra</div></div>
@@ -322,7 +331,16 @@ function compCard(d){
   return html||'<div style="color:var(--txt3);font-size:12px;padding:8px 0">Sin datos para este período</div>';
 }
 function rowC(l,v,c){return`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:.5px solid var(--border)"><span style="font-size:12px;color:var(--txt2)">${l}</span><span style="font-size:13px;font-weight:500;color:${c}">${v}</span></div>`}
-function chartColors(n,hc){return Array.from({length:n},(_,i)=>i<5?'#B2A8E7':i<hc?'#146787':'rgba(250,52,94,0.75)');}
+function chartColors(n,hc){
+  var months=DATA.months||[];
+  return Array.from({length:n},function(_,i){
+    if(i>=hc) return 'rgba(250,52,94,0.65)';
+    var m=months[i]||'';
+    if(m.indexOf('2024')===0) return '#B2A8E7';
+    if(m.indexOf('2025')===0) return '#146787';
+    return '#FA345E';
+  });
+}
 
 function buildCartera(){
   kc('c1');kc('c2');
