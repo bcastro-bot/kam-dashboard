@@ -1,11 +1,13 @@
 """
 procesar_datos.py — KAM Dashboard Multi-KAM
 Genera docs/data.json con datos de TODOS los KAMs.
+Soporta hojas: CUADRATURAS o OTROS_CUADRATURADOCUMENTOSINGRE
 Forecast = mismo mes año anterior × FORECAST_GROWTH.
 """
 
 import sys
 import json
+import re as _re
 from pathlib import Path
 
 try:
@@ -15,20 +17,16 @@ except ImportError:
     sys.exit(1)
 
 # ── Configuración ──────────────────────────────────────────────────────────────
-SHEET_NAME      = "CUADRATURAS"
-REF_DATE        = pd.Timestamp("2026-07-01")
+SHEET_NAMES     = ["CUADRATURAS", "OTROS_CUADRATURADOCUMENTOSINGRE"]
+REF_DATE        = pd.Timestamp("2026-08-01")
 OUTPUT_FILE     = Path("docs/data.json")
 FORECAST_GROWTH = 1.35
-
-# KAMs válidos (excluir BACK, #N/D, etc.)
-VALID_KAMS = ["BC", "BG", "LJ", "CF", "AA", "DA", "SC", "EC", "SG"]
-
-KAM_NAMES = {
-    "BC": "BC", "BG": "BG", "LJ": "LJ", "CF": "CF",
-    "AA": "AA", "DA": "DA", "SC": "SC", "EC": "EC", "SG": "SG"
-}
+VALID_KAMS      = ["BC", "BG", "LJ", "CF", "AA", "DA", "SC", "EC", "SG"]
+KAM_NAMES       = {k: k for k in VALID_KAMS}
 
 ALL_POSSIBLE_MONTHS = [
+    "2024-01","2024-02","2024-03","2024-04","2024-05","2024-06",
+    "2024-07","2024-08","2024-09","2024-10","2024-11","2024-12",
     "2025-01","2025-02","2025-03","2025-04","2025-05","2025-06",
     "2025-07","2025-08","2025-09","2025-10","2025-11","2025-12",
     "2026-01","2026-02","2026-03","2026-04","2026-05","2026-06",
@@ -36,59 +34,49 @@ ALL_POSSIBLE_MONTHS = [
 ]
 
 MONTH_LABELS = {
+    "2024-01":"Ene 24","2024-02":"Feb 24","2024-03":"Mar 24","2024-04":"Abr 24",
+    "2024-05":"May 24","2024-06":"Jun 24","2024-07":"Jul 24","2024-08":"Ago 24",
+    "2024-09":"Sep 24","2024-10":"Oct 24","2024-11":"Nov 24","2024-12":"Dic 24",
     "2025-01":"Ene 25","2025-02":"Feb 25","2025-03":"Mar 25","2025-04":"Abr 25",
     "2025-05":"May 25","2025-06":"Jun 25","2025-07":"Jul 25","2025-08":"Ago 25",
     "2025-09":"Sep 25","2025-10":"Oct 25","2025-11":"Nov 25","2025-12":"Dic 25",
     "2026-01":"Ene 26","2026-02":"Feb 26","2026-03":"Mar 26","2026-04":"Abr 26",
-    "2026-05":"May 26","2026-06":"Jun 26",
-    "2026-07":"Jul 26*","2026-08":"Ago 26*","2026-09":"Sep 26*",
-    "2026-10":"Oct 26*","2026-11":"Nov 26*","2026-12":"Dic 26*",
+    "2026-05":"May 26","2026-06":"Jun 26","2026-07":"Jul 26",
+    "2026-08":"Ago 26*","2026-09":"Sep 26*","2026-10":"Oct 26*",
+    "2026-11":"Nov 26*","2026-12":"Dic 26*",
 }
 
 FORECAST_BASE = {
-    "2026-07":"2025-07","2026-08":"2025-08","2026-09":"2025-09",
-    "2026-10":"2025-10","2026-11":"2025-11","2026-12":"2025-12",
+    "2026-08":"2025-08","2026-09":"2025-09","2026-10":"2025-10",
+    "2026-11":"2025-11","2026-12":"2025-12",
 }
 
-def pct(a, b):
-    if not b or b == 0: return None
-    return round((a - b) / b * 100, 1)
+# ── Categorización de productos ────────────────────────────────────────────────
+def categorize_product(producto):
+    if pd.isna(producto): return "Sin clasificar"
+    p = str(producto).strip().lower()
+    if _re.match(r"^gif?t?t?\s*card\s*-?\s*po\.", p) or p.startswith("gift card -") or p.startswith("gift card po") or p.startswith("gitt card"):
+        return "Gift Card"
+    if "gift card" in p or "giftcard" in p or "gc rewards" in p or "gc market" in p:
+        return "Gift Card"
+    if "puntos" in p: return "Puntos"
+    if "software" in p: return "Software"
+    if "agencia" in p: return "Agencia"
+    if "comisión" in p or "comision" in p: return "Comisión"
+    if "efectivo" in p: return "Efectivo"
+    if "fee" in p or "saas" in p: return "Fee SaaS"
+    if "plataforma" in p: return "Plataforma"
+    if "rebaja" in p: return "Ajuste"
+    return "Otros"
 
 def fmt_month_short(m):
     if not m: return ""
     names = ["","Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"]
     return names[int(m.split("-")[1])]
 
-# ── Categorización de productos ─────────────────────────────────────────────────
-import re as _re
-def categorize_product(producto):
-    """Agrupa nombres de producto inconsistentes en categorías limpias."""
-    if pd.isna(producto):
-        return "Sin clasificar"
-    p = str(producto).strip().lower()
-
-    # Gift Card con número de orden (PO.xxxxx) y variantes de escritura
-    if _re.match(r"^gif?t?t?\s*card\s*-?\s*po\.", p) or p.startswith("gift card -") or p.startswith("gift card po") or p.startswith("gitt card"):
-        return "Gift Card"
-    if "gift card" in p or "giftcard" in p or "gc rewards" in p or "gc market" in p:
-        return "Gift Card"
-    if "puntos" in p:
-        return "Puntos"
-    if "software" in p:
-        return "Software"
-    if "agencia" in p:
-        return "Agencia"
-    if "comisión" in p or "comision" in p:
-        return "Comisión"
-    if "efectivo" in p:
-        return "Efectivo"
-    if "fee" in p or "saas" in p:
-        return "Fee SaaS"
-    if "plataforma" in p:
-        return "Plataforma"
-    if "rebaja" in p:
-        return "Ajuste"
-    return "Otros"
+def pct(a, b):
+    if not b or b == 0: return None
+    return round((a - b) / b * 100, 1)
 
 # ── Carga ──────────────────────────────────────────────────────────────────────
 def load_files(paths):
@@ -98,52 +86,69 @@ def load_files(paths):
         if not p.exists():
             print(f"  ✗ No encontré: {p}"); continue
         print(f"  ✓ Cargando {p.name}...")
-        df = pd.read_excel(p, sheet_name=SHEET_NAME)
-        df.columns = [c.strip() for c in df.columns]
 
-        # Detectar columna KAM
-        if "Kam" in df.columns:
-            df = df.rename(columns={"Kam": "KAM"})
-        elif "Codigo Vendedor" in df.columns:
-            df = df.rename(columns={"Codigo Vendedor": "KAM"})
-        else:
+        # Detectar hoja
+        import openpyxl
+        wb = openpyxl.load_workbook(p, read_only=True)
+        sheet = None
+        for s in SHEET_NAMES:
+            if s in wb.sheetnames:
+                sheet = s; break
+        if not sheet:
+            print(f"  ⚠ No encontré hojas conocidas en {p.name}. Hojas disponibles: {wb.sheetnames}"); continue
+
+        df = pd.read_excel(p, sheet_name=sheet)
+        df.columns = [str(c).strip() for c in df.columns]
+
+        # Normalizar columna KAM
+        for col in ["Kam", "KAM", "Codigo Vendedor"]:
+            if col in df.columns:
+                df = df.rename(columns={col: "Kam"}); break
+        if "Kam" not in df.columns:
             print(f"  ⚠ Sin columna KAM en {p.name}"); continue
 
-        # Detectar columna precio
+        # Normalizar columna precio
         for col in ["Precio","Prrecio","precio","PRECIO"]:
             if col in df.columns:
                 df = df.rename(columns={col:"Precio"}); break
 
-        df = df[df["Precio"] != 0].copy()
+        df = df[df["Precio"].notna() & (df["Precio"] != 0)].copy()
         df["Fecha Emision"] = pd.to_datetime(df["Fecha Emision"])
         df["Mes"] = df["Fecha Emision"].dt.to_period("M").astype(str)
-        df = df[df["KAM"].isin(VALID_KAMS)]
+        df = df[df["Kam"].isin(VALID_KAMS)]
 
         if "Producto" in df.columns:
             df["Categoria"] = df["Producto"].apply(categorize_product)
         else:
             df["Categoria"] = "Sin clasificar"
 
-        frames.append(df[["KAM","Cliente","Precio","Mes","Categoria"]])
-        print(f"    → {len(df)} registros ({df['KAM'].nunique()} KAMs)")
+        frames.append(df[["Kam","Cliente","Precio","Mes","Categoria"]])
+        print(f"    → {len(df)} registros · hoja: {sheet}")
 
     if not frames:
         print("ERROR: No se cargó ningún archivo."); sys.exit(1)
     return pd.concat(frames, ignore_index=True)
 
 # ── Dataset por KAM ────────────────────────────────────────────────────────────
-def build_kam_data(df_kam, kam_code):
+def build_kam_data(df_kam):
     monthly = df_kam.groupby(["Cliente","Mes"])["Precio"].sum().reset_index()
-
     real_months = sorted(monthly["Mes"].unique().tolist())
-    hist_months = [m for m in ALL_POSSIBLE_MONTHS if m in real_months]
+    hist_months = [m for m in ALL_POSSIBLE_MONTHS if m in real_months and m <= "2026-12"]
     forecast_months = sorted([m for m in FORECAST_BASE if m not in real_months])
     all_months = hist_months + forecast_months
 
-    months_2025 = [m for m in hist_months if m.startswith("2025")]
-    months_2026 = [m for m in hist_months if m.startswith("2026")]
-    yoy_pairs = [(f"2025-{m.split('-')[1]}", m) for m in months_2026
-                 if f"2025-{m.split('-')[1]}" in months_2025]
+    # Años disponibles
+    years = sorted(set(m[:4] for m in hist_months))
+    months_by_year = {y: [m for m in hist_months if m.startswith(y)] for y in years}
+
+    # Pares YoY comparables (año actual vs año anterior)
+    current_year = max(years)
+    prev_year = str(int(current_year) - 1)
+    yoy_pairs = []
+    for m_cur in months_by_year.get(current_year, []):
+        m_prev = prev_year + "-" + m_cur[5:]
+        if m_prev in hist_months:
+            yoy_pairs.append((m_prev, m_cur))
 
     clients = {}
     for client, grp in monthly.groupby("Cliente"):
@@ -159,27 +164,31 @@ def build_kam_data(df_kam, kam_code):
         first_m = active[0] if active else None
         days = int((REF_DATE - pd.Timestamp(last_m + "-28")).days) if last_m else 999
 
-        rev_2025 = sum(vd.get(m, 0) for m in months_2025)
-        rev_2026 = sum(vd.get(m, 0) for m in months_2026)
-        ytd25 = sum(vd.get(p[0], 0) for p in yoy_pairs)
-        ytd26 = sum(vd.get(p[1], 0) for p in yoy_pairs)
+        rev_by_year = {y: sum(vd.get(m, 0) for m in months_by_year.get(y, [])) for y in years}
+        ytd_prev = sum(vd.get(p[0], 0) for p in yoy_pairs)
+        ytd_cur  = sum(vd.get(p[1], 0) for p in yoy_pairs)
 
-        vals_2026 = [int(vd.get(m, 0)) for m in months_2026]
-        avg_2026 = int(sum(vals_2026) / len(vals_2026)) if vals_2026 else 0
+        vals_cur_year = [int(vd.get(m, 0)) for m in months_by_year.get(current_year, [])]
+        avg_cur = int(sum(vals_cur_year) / len(vals_cur_year)) if vals_cur_year else 0
 
         mensual = [{"lbl": fmt_month_short(p[0]), "v25": int(vd.get(p[0],0)),
                     "v26": int(vd.get(p[1],0)), "pct": pct(vd.get(p[1],0), vd.get(p[0],0))}
                    for p in yoy_pairs]
-        q1_25 = sum(vd.get(m,0) for m in months_2025 if m.endswith(("-01","-02","-03")))
-        q1_26 = sum(vd.get(m,0) for m in months_2026 if m.endswith(("-01","-02","-03")))
+
+        # Trimestral YoY
+        q1_prev = sum(vd.get(m,0) for m in months_by_year.get(prev_year,[]) if m.endswith(("-01","-02","-03")))
+        q1_cur  = sum(vd.get(m,0) for m in months_by_year.get(current_year,[]) if m.endswith(("-01","-02","-03")))
+        trimestral = [{"lbl":"Q1","v25":int(q1_prev),"v26":int(q1_cur),"pct":pct(q1_cur,q1_prev)}]
 
         last3 = hist_months[-3:]
         has_recent = any(vd.get(m,0) > 0 for m in last3)
         mid = hist_months[max(0,len(hist_months)-7):-3]
         has_mid = any(vd.get(m,0) > 0 for m in mid)
+        has_prev_year = rev_by_year.get(prev_year, 0) > 0
+
         if has_recent:
-            status = "nuevo" if not rev_2025 else "activo"
-        elif rev_2026 > 0 or has_mid:
+            status = "nuevo" if not has_prev_year else "activo"
+        elif rev_by_year.get(current_year, 0) > 0 or has_mid:
             status = "en riesgo"
         else:
             status = "churn"
@@ -187,20 +196,21 @@ def build_kam_data(df_kam, kam_code):
         clients[client] = {
             "total": total, "freq": freq, "primera": first_m, "ultima": last_m,
             "dias": days, "status": status,
-            "rev_2025": int(rev_2025), "rev_2026": int(rev_2026),
-            "ytd25": int(ytd25), "ytd26": int(ytd26), "ytd_pct": pct(ytd26, ytd25),
-            "avg_2026": avg_2026,
+            "rev_by_year": {y: int(v) for y,v in rev_by_year.items()},
+            "rev_2025": int(rev_by_year.get("2025", 0)),
+            "rev_2026": int(rev_by_year.get("2026", 0)),
+            "ytd25": int(ytd_prev), "ytd26": int(ytd_cur),
+            "ytd_pct": pct(ytd_cur, ytd_prev),
+            "avg_2026": avg_cur,
             "vals": all_vals, "hist_count": len(hist_months),
-            "forecast_vals": [int(vd.get(FORECAST_BASE[m],0)*FORECAST_GROWTH) for m in forecast_months],
-            "forecast_total": int(sum(int(vd.get(FORECAST_BASE[m],0)*FORECAST_GROWTH) for m in forecast_months)),
-            "forecast_has_data": any(vd.get(FORECAST_BASE[m],0)>0 for m in forecast_months),
-            "mensual": mensual,
-            "trimestral": [{"lbl":"Q1","v25":int(q1_25),"v26":int(q1_26),"pct":pct(q1_26,q1_25)}],
-            "q1_pct": pct(q1_26, q1_25),
-            "may_pct": next((p["pct"] for p in mensual if p["lbl"]=="May"), None),
+            "forecast_vals": forecast_vals,
+            "forecast_total": int(sum(forecast_vals)),
+            "forecast_has_data": any(vd.get(FORECAST_BASE[m],0) > 0 for m in forecast_months),
+            "mensual": mensual, "trimestral": trimestral,
+            "q1_pct": pct(q1_cur, q1_prev),
         }
 
-    # Cartera del KAM
+    # Cartera macro
     macro = {}
     for m in hist_months:
         macro[m] = int(monthly[monthly["Mes"]==m]["Precio"].sum())
@@ -209,10 +219,12 @@ def build_kam_data(df_kam, kam_code):
 
     macro_hist = [macro.get(m,0) for m in hist_months]
     macro_fc   = [macro.get(m,0) for m in forecast_months]
-    ytd_c25 = sum(macro.get(p[0],0) for p in yoy_pairs)
-    ytd_c26 = sum(macro.get(p[1],0) for p in yoy_pairs)
-    q1_c25  = sum(macro.get(m,0) for m in months_2025 if m.endswith(("-01","-02","-03")))
-    q1_c26  = sum(macro.get(m,0) for m in months_2026 if m.endswith(("-01","-02","-03")))
+
+    rev_macro_by_year = {y: sum(macro.get(m,0) for m in months_by_year.get(y,[])) for y in years}
+    ytd_c_prev = sum(macro.get(p[0],0) for p in yoy_pairs)
+    ytd_c_cur  = sum(macro.get(p[1],0) for p in yoy_pairs)
+    q1_c_prev  = sum(macro.get(m,0) for m in months_by_year.get(prev_year,[]) if m.endswith(("-01","-02","-03")))
+    q1_c_cur   = sum(macro.get(m,0) for m in months_by_year.get(current_year,[]) if m.endswith(("-01","-02","-03")))
 
     cartera = {
         "total": sum(macro_hist),
@@ -220,14 +232,29 @@ def build_kam_data(df_kam, kam_code):
         "hist_count": len(hist_months),
         "forecast_vals": macro_fc,
         "forecast_total": sum(macro_fc),
+        "rev_by_year": {y: int(v) for y,v in rev_macro_by_year.items()},
         "mensual": [{"lbl": fmt_month_short(p[0]), "v25": macro.get(p[0],0),
                      "v26": macro.get(p[1],0), "pct": pct(macro.get(p[1],0), macro.get(p[0],0))}
                     for p in yoy_pairs],
-        "trimestral": [{"lbl":"Q1","v25":int(q1_c25),"v26":int(q1_c26),"pct":pct(q1_c26,q1_c25)}],
-        "ytd25": int(ytd_c25), "ytd26": int(ytd_c26), "ytd_pct": pct(ytd_c26,ytd_c25),
-        "q1_pct": pct(q1_c26,q1_c25),
-        "may_pct": pct(macro.get("2026-05",0), macro.get("2025-05",0)),
+        "trimestral": [{"lbl":"Q1","v25":int(q1_c_prev),"v26":int(q1_c_cur),"pct":pct(q1_c_cur,q1_c_prev)}],
+        "ytd25": int(ytd_c_prev), "ytd26": int(ytd_c_cur),
+        "ytd_pct": pct(ytd_c_cur, ytd_c_prev),
+        "q1_pct": pct(q1_c_cur, q1_c_prev),
+        "years": years,
     }
+
+    # Tickets por mes
+    tickets_df = df_kam[df_kam["Precio"] > 0]
+    tix_monthly = tickets_df.groupby("Mes").agg(tickets=("Precio","count"), revenue=("Precio","sum")).reset_index()
+    tickets_por_mes = {}
+    for m in hist_months:
+        row = tix_monthly[tix_monthly["Mes"]==m]
+        if len(row):
+            t = int(row["tickets"].values[0])
+            r = int(row["revenue"].values[0])
+            tickets_por_mes[m] = {"tickets": t, "revenue": r, "ticket_prom": int(r/t) if t else 0, "label": MONTH_LABELS.get(m,m)}
+        else:
+            tickets_por_mes[m] = {"tickets": 0, "revenue": 0, "ticket_prom": 0, "label": MONTH_LABELS.get(m,m)}
 
     # Clientes activos por mes
     monthly_net = df_kam.groupby(["Cliente","Mes"])["Precio"].sum().reset_index()
@@ -235,35 +262,18 @@ def build_kam_data(df_kam, kam_code):
     clientes_por_mes = {}
     for m in hist_months:
         cm = monthly_net[monthly_net["Mes"]==m]
-        clientes_por_mes[m] = {
-            "count": int(cm["Cliente"].nunique()),
-            "revenue": int(cm["Precio"].sum()),
-            "label": MONTH_LABELS.get(m, m)
-        }
-
-    # Tickets por mes (facturas positivas)
-    tickets_raw = df_kam[df_kam["Precio"] > 0].groupby("Mes").agg(
-        tickets=("Precio","count"),
-        revenue=("Precio","sum")
-    ).reset_index()
-    tickets_por_mes = {}
-    for m in hist_months:
-        row = tickets_raw[tickets_raw["Mes"]==m]
-        if len(row)>0:
-            t=int(row["tickets"].values[0]); r=int(row["revenue"].values[0])
-            tickets_por_mes[m]={"tickets":t,"revenue":r,"ticket_prom":int(r/t) if t>0 else 0,"label":MONTH_LABELS.get(m,m)}
-        else:
-            tickets_por_mes[m]={"tickets":0,"revenue":0,"ticket_prom":0,"label":MONTH_LABELS.get(m,m)}
+        clientes_por_mes[m] = {"count": int(cm["Cliente"].nunique()), "revenue": int(cm["Precio"].sum()), "label": MONTH_LABELS.get(m,m)}
 
     return {
         "months": all_months,
         "month_labels": [MONTH_LABELS.get(m, m) for m in all_months],
         "hist_count": len(hist_months),
         "forecast_months": forecast_months,
+        "years": years,
         "cartera": cartera,
         "clients": clients,
-        "clientes_por_mes": clientes_por_mes,
         "tickets_por_mes": tickets_por_mes,
+        "clientes_por_mes": clientes_por_mes,
     }
 
 # ── Main ───────────────────────────────────────────────────────────────────────
@@ -274,13 +284,13 @@ if __name__ == "__main__":
         if not files:
             print("USO: python procesar_datos.py archivo.xlsx"); sys.exit(1)
 
-    print(f"\n{'='*52}")
-    print(f"  KAM Dashboard — Multi-KAM")
-    print(f"{'='*52}\n")
+    print(f"\n{'='*54}")
+    print(f"  KAM Dashboard — Multi-KAM (2024–2026)")
+    print(f"{'='*54}\n")
 
     df = load_files(files)
-    kams_presentes = [k for k in VALID_KAMS if k in df["KAM"].values]
-    print(f"\n  KAMs encontrados: {kams_presentes}\n")
+    kams_presentes = [k for k in VALID_KAMS if k in df["Kam"].values]
+    print(f"\n  KAMs: {kams_presentes}")
 
     output = {
         "generated_at": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"),
@@ -289,36 +299,34 @@ if __name__ == "__main__":
     }
 
     for kam in kams_presentes:
-        df_kam = df[df["KAM"] == kam].copy()
-        print(f"  Procesando {kam}: {df_kam['Cliente'].nunique()} clientes...")
-        output[kam] = build_kam_data(df_kam, kam)
+        df_kam = df[df["Kam"] == kam].copy()
+        print(f"  {kam}: {df_kam['Cliente'].nunique()} clientes · {df_kam['Mes'].min()} → {df_kam['Mes'].max()}")
+        output[kam] = build_kam_data(df_kam)
 
-    # ── Productos por categoría: revenue mensual + tickets por KAM ──────────────
+    # Productos por categoría
     all_months_sorted = sorted(df["Mes"].unique().tolist())
     productos_data = {}
     for kam in kams_presentes:
-        df_kam = df[df["KAM"] == kam]
-        if len(df_kam) == 0:
-            continue
+        df_kam = df[df["Kam"] == kam]
+        if not len(df_kam): continue
         cat_monthly = df_kam.groupby(["Categoria","Mes"])["Precio"].sum().reset_index()
-        cat_counts = df_kam[df_kam["Precio"] > 0].groupby("Categoria")["Precio"].agg(["sum","count"]).reset_index()
-        cats = sorted(df_kam["Categoria"].unique().tolist())
+        cat_counts = df_kam[df_kam["Precio"]>0].groupby("Categoria")["Precio"].agg(["sum","count"]).reset_index()
         cat_data = {}
-        for cat in cats:
+        for cat in sorted(df_kam["Categoria"].unique()):
             vals = []
             for m in all_months_sorted:
                 row = cat_monthly[(cat_monthly["Categoria"]==cat) & (cat_monthly["Mes"]==m)]
                 vals.append(int(row["Precio"].values[0]) if len(row) else 0)
             total = sum(vals)
             if total > 0:
-                count_row = cat_counts[cat_counts["Categoria"]==cat]
-                n_tickets = int(count_row["count"].values[0]) if len(count_row) else 0
-                rev_positivo = int(count_row["sum"].values[0]) if len(count_row) else total
-                ticket_prom = int(rev_positivo / n_tickets) if n_tickets > 0 else 0
-                cat_data[cat] = {"vals": vals, "total": total, "tickets": n_tickets, "ticket_prom": ticket_prom}
+                cr = cat_counts[cat_counts["Categoria"]==cat]
+                n  = int(cr["count"].values[0]) if len(cr) else 0
+                rev_pos = int(cr["sum"].values[0]) if len(cr) else total
+                cat_data[cat] = {"vals": vals, "total": total, "tickets": n,
+                                 "ticket_prom": int(rev_pos/n) if n else 0}
         productos_data[kam] = cat_data
 
-    output["productos_data"] = productos_data
+    output["productos_data"]   = productos_data
     output["productos_months"] = all_months_sorted
 
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -326,14 +334,10 @@ if __name__ == "__main__":
         json.dump(output, f, ensure_ascii=False, separators=(",",":"))
 
     kb = OUTPUT_FILE.stat().st_size / 1024
-    print(f"\n  ✓ Generado: {OUTPUT_FILE}  ({kb:.1f} KB)")
+    print(f"\n  ✓ {OUTPUT_FILE} · {kb:.0f} KB")
+    print(f"  ✓ Años cubiertos: {output[kams_presentes[0]]['years']}")
     for kam in kams_presentes:
-        total = output[kam]["cartera"]["total"]
-        nclientes = len(output[kam]["clients"])
-        print(f"    {kam}: {nclientes} clientes | ${total:,.0f}")
-    print()
-    print("  Categorías de producto detectadas:")
-    for cat in sorted(df["Categoria"].unique()):
-        rev = df[(df["Categoria"]==cat) & (df["Precio"]>0)]["Precio"].sum()
-        print(f"    {cat}: ${rev:,.0f}")
+        t = output[kam]["cartera"]["total"]
+        n = len(output[kam]["clients"])
+        print(f"    {kam}: {n} clientes · ${t:,.0f}")
     print()
