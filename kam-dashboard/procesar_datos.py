@@ -21,7 +21,7 @@ SHEET_NAMES     = ["CUADRATURAS", "OTROS_CUADRATURADOCUMENTOSINGRE"]
 REF_DATE        = pd.Timestamp("2026-08-01")
 OUTPUT_FILE     = Path("docs/data.json")
 FORECAST_GROWTH = 1.35
-VALID_KAMS      = ["BC", "BG", "LJ", "CF", "AA", "DA", "SC", "EC", "SG"]
+VALID_KAMS      = ["BC", "BG", "LJ", "CF", "AA", "DA", "SC", "EC", "SG", "BACK"]
 KAM_NAMES       = {k: k for k in VALID_KAMS}
 
 ALL_POSSIBLE_MONTHS = [
