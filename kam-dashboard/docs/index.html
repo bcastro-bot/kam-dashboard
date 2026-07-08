@@ -683,7 +683,7 @@ function buildActivos(){
 function buildEquipo(){
   const kams=FULL_DATA.kams;
   // Solo KAMs con datos relevantes
-  const kamsMain=kams.filter(k=>FULL_DATA[k].cartera.total>1000000);
+  const kamsMain=kams.filter(k=>FULL_DATA[k].cartera.total>1000000 && k!=='PERDIDOS' && FULL_DATA[k].cartera.vals);
   const totalRev=kamsMain.reduce((s,k)=>s+FULL_DATA[k].cartera.total,0);
   const totalClientes=kamsMain.reduce((s,k)=>s+Object.keys(FULL_DATA[k].clients).length,0);
   const totalFc=kamsMain.reduce((s,k)=>s+(FULL_DATA[k].cartera.forecast_total||0)*1000,0);
@@ -714,7 +714,7 @@ function buildEquipo(){
   },0));
 
   // Colores por KAM
-  const kamColors={'BC':'#FA345E','BG':'#146787','LJ':'#45C1AD','CF':'#B2A8E7','AA':'#97E89F','DA':'#FFE6E8','SC':'#D7FAB6','EC':'#1B1B1B','SG':'#888'};
+  const kamColors={'BC':'#FA345E','BG':'#146787','LJ':'#45C1AD','CF':'#B2A8E7','AA':'#97E89F','DA':'#FFE6E8','SC':'#D7FAB6','EC':'#1B1B1B','SG':'#888','BACK':'#5D4037'};
 
   document.getElementById('pane-equipo').innerHTML=`
     <div class="kpis" style="margin-bottom:18px">
