@@ -549,7 +549,7 @@ function buildTabla(){
     <div class="card" style="padding:0;overflow:hidden">
       <div class="tbl-wrap">
         <table>
-          <colgroup><col style="width:28px"><col style="min-width:160px"><col style="width:78px"><col style="width:78px"><col style="width:78px"><col style="width:68px"><col style="width:82px"><col style="width:78px"><col style="width:62px"><col style="width:62px"><col style="width:72px"><col style="width:72px"><col style="width:72px"></colgroup>
+          <colgroup><col style="width:28px"><col style="min-width:200px"><col style="width:80px"><col style="width:80px"><col style="width:80px"><col style="width:80px"><col style="width:70px"><col style="width:84px"><col style="width:80px"><col style="width:55px"><col style="width:55px"><col style="width:75px"><col style="width:80px"></colgroup>
           <thead><tr>
             <th class="left">#</th>
             <th class="left ${tblSort==='cliente'?'sorted':''}" onclick="setTS('cliente')">Cliente</th>
@@ -569,7 +569,7 @@ function buildTabla(){
         </table>
       </div>
     </div>
-    <p class="note">Activo = compró últimos 90 días · En riesgo = 90–180 días · Churn = sin compra 2026 · Forecast = mismo mes 2025 × 1.35</p>`;
+    <p class="note">Activo = compró últimos 90 días · En riesgo = 90–180 días · Forecast = mismo mes 2025 × 1.35</p>`;
   renderTabla();
 }
 function setTF(f){tblFilter=f;buildTabla();}
