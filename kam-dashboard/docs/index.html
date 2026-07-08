@@ -887,7 +887,7 @@ function buildTickets(){
   var el = document.getElementById('pane-tickets');
   if(!DATA || !DATA.tickets_por_mes){ el.innerHTML = "<div style='padding:20px;color:var(--txt3)'>Sin datos de tickets.</div>"; return; }
 
-  var kamColors = {BC:'#FA345E',BG:'#146787',LJ:'#45C1AD',CF:'#B2A8E7',AA:'#97E89F',DA:'#FFB300',SC:'#D7FAB6'};
+  var kamColors = {BC:'#FA345E',BG:'#146787',LJ:'#45C1AD',CF:'#B2A8E7',AA:'#97E89F',DA:'#FFB300',SC:'#D7FAB6',EC:'#888',SG:'#aaa',BACK:'#5D4037'};
   var col = kamColors[curKAM] || '#888';
   var months = DATA.months.slice(0, DATA.hist_count);
 
