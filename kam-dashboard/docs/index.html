@@ -222,6 +222,9 @@ if(sessionStorage.getItem('kam_auth') === '1'){
 
 // ── Estado ─────────────────────────────────────────────────────────────────
 let FULL_DATA=null,DATA=null,curKAM=null,curPeriod='mensual',curTab='cartera',curClient=null;
+// vals están en miles — multiplicar al usar
+const vk=v=>v*1000;
+const vka=arr=>(arr||[]).map(v=>v*1000);
 let tblFilter='all',tblSort='total',tblAsc=false;
 let charts={};
 
@@ -310,9 +313,30 @@ function renderKPIs(){
 }
 
 function getPD(d){
-  if(curPeriod==='mensual')return d.mensual||[];
   if(curPeriod==='trimestral')return d.trimestral||[];
-  return[{lbl:'Ene–May 25',v25:d.ytd25,v26:null,pct:null},{lbl:'YTD 2026',v25:null,v26:d.ytd26,pct:d.ytd_pct}];
+  if(curPeriod==='ytd')return[{lbl:'YTD prev',v25:d.ytd25,v26:null,pct:null},{lbl:'YTD actual',v25:null,v26:d.ytd26,pct:d.ytd_pct}];
+  // Mensual: reconstruir desde vals si no existe mensual
+  if(d.mensual&&d.mensual.length) return d.mensual;
+  // Reconstruir YoY desde vals
+  var months=DATA.months||[];
+  var hc=DATA.hist_count||0;
+  var years=DATA.years||['2025','2026'];
+  var prevY=years[years.length-2]||'2025';
+  var curY=years[years.length-1]||'2026';
+  var pairs=[];
+  for(var i=0;i<hc;i++){
+    var m=months[i];
+    if(!m||!m.startsWith(curY)) continue;
+    var mPrev=prevY+'-'+m.slice(5);
+    var iPrev=months.indexOf(mPrev);
+    if(iPrev<0) continue;
+    var vPrev=(d.vals&&d.vals[iPrev]?d.vals[iPrev]*1000:0);
+    var vCur=(d.vals&&d.vals[i]?d.vals[i]*1000:0);
+    var p=vPrev>0?Math.round((vCur-vPrev)/vPrev*100):null;
+    var names=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    pairs.push({lbl:names[+m.slice(5)],v25:vPrev,v26:vCur,pct:p});
+  }
+  return pairs;
 }
 function compCard(d){
   const pd=getPD(d);let html='';
@@ -369,7 +393,7 @@ function buildCartera(){
   requestAnimationFrame(()=>{
     const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fmtF(c.raw)}}},scales:{x:{ticks:{autoSkip:true,maxTicksLimit:12,font:{size:9}},grid:{display:false}},y:{ticks:{callback:v=>fmt(v),font:{size:9}},grid:{color:'rgba(128,128,128,.06)'}}}};
     const ctx1=document.getElementById('c1');
-    if(ctx1)charts.c1=new Chart(ctx1,{type:'bar',data:{labels,datasets:[{data:C.vals,backgroundColor:chartColors(C.vals.length,hc),borderRadius:3}]},options:opts});
+    if(ctx1)charts.c1=new Chart(ctx1,{type:'bar',data:{labels,datasets:[{data:vka(C.vals),backgroundColor:chartColors(C.vals.length,hc),borderRadius:3}]},options:opts});
     if(pd.length){const ctx2=document.getElementById('c2');
       if(ctx2)charts.c2=new Chart(ctx2,{type:'bar',data:{labels:pd.map(p=>p.lbl),datasets:[
         {label:'2025',data:pd.map(p=>p.v25||0),backgroundColor:'#B2A8E7',borderRadius:3},
@@ -428,7 +452,7 @@ function buildCliente(){
   requestAnimationFrame(()=>{
     const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fmtF(c.raw)}}},scales:{x:{ticks:{autoSkip:true,maxTicksLimit:12,font:{size:9}},grid:{display:false}},y:{ticks:{callback:v=>fmt(v),font:{size:9}},grid:{color:'rgba(128,128,128,.06)'}}}};
     const ctx=document.getElementById('cli1');
-    if(ctx)charts.cli1=new Chart(ctx,{type:'bar',data:{labels,datasets:[{data:d.vals,backgroundColor:chartColors(d.vals.length,hc),borderRadius:3}]},options:opts});
+    if(ctx)charts.cli1=new Chart(ctx,{type:'bar',data:{labels,datasets:[{data:vka(d.vals),backgroundColor:chartColors(d.vals.length,hc),borderRadius:3}]},options:opts});
   });
 }
 function filterCliChips(q){buildCliChips(q);}
@@ -530,6 +554,7 @@ function buildTabla(){
             <th class="left">#</th>
             <th class="left ${tblSort==='cliente'?'sorted':''}" onclick="setTS('cliente')">Cliente</th>
             <th class="${tblSort==='total'?'sorted':''}" onclick="setTS('total')">Total hist.</th>
+            <th class="${tblSort==='ytd24'?'sorted':''}" onclick="setTS('ytd24')">YTD 2024</th>
             <th class="${tblSort==='ytd25'?'sorted':''}" onclick="setTS('ytd25')">YTD 2025</th>
             <th class="${tblSort==='ytd26'?'sorted':''}" onclick="setTS('ytd26')">YTD 2026</th>
             <th class="${tblSort==='ytd_pct'?'sorted':''}" onclick="setTS('ytd_pct')">Var YTD</th>
@@ -539,7 +564,6 @@ function buildTabla(){
             <th class="${tblSort==='dias'?'sorted':''}" onclick="setTS('dias')">Días</th>
             <th class="${tblSort==='status'?'sorted':''}" onclick="setTS('status')">Estado</th>
             <th class="left">Últ. compra</th>
-            <th class="left">1ª compra</th>
           </tr></thead>
           <tbody id="tbl-body"></tbody>
         </table>
@@ -566,6 +590,7 @@ function renderTabla(){
   const sC={activo:'p-activo',nuevo:'p-nuevo','en riesgo':'p-riesgo',churn:'p-churn'};
   const sL={activo:'Activo',nuevo:'Nuevo','en riesgo':'En riesgo',churn:'Churn'};
   const sumTotal=rows.reduce((s,r)=>s+r.total,0);
+  const sumYtd24=rows.reduce((s,r)=>s+(r.ytd24||0),0);
   const sumYtd25=rows.reduce((s,r)=>s+(r.ytd25||0),0);
   const sumYtd26=rows.reduce((s,r)=>s+(r.ytd26||0),0);
   const sumAvg=rows.reduce((s,r)=>s+(r.avg_2026||0),0);
@@ -575,6 +600,7 @@ function renderTabla(){
     <td></td>
     <td style="font-size:12px;font-weight:600">TOTAL (${rows.length} clientes)</td>
     <td style="text-align:right;font-weight:600">${fmtF(sumTotal)}</td>
+    <td style="text-align:right;font-weight:600;color:var(--txt2)">${fmtF(sumYtd24)}</td>
     <td style="text-align:right;font-weight:600;color:var(--txt2)">${fmtF(sumYtd25)}</td>
     <td style="text-align:right;font-weight:600;color:var(--txt2)">${fmtF(sumYtd26)}</td>
     <td style="text-align:right">${ytdPct!==null?`<span class="pct-pill" style="background:${pBg(parseFloat(ytdPct))};color:${pCol(parseFloat(ytdPct))};font-weight:600">${parseFloat(ytdPct)>=0?'+':''}${ytdPct}%</span>`:'—'}</td>
@@ -588,6 +614,7 @@ function renderTabla(){
       <td style="text-align:center;color:var(--txt3);font-size:11px">${i+1}</td>
       <td><div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px">${r.cliente}</div><div class="mini-bar" style="width:${bw}%"></div></td>
       <td style="text-align:right;font-weight:500">${fmt(r.total)}</td>
+      <td style="text-align:right;color:var(--txt2)">${r.ytd24>0?fmt(r.ytd24):'—'}</td>
       <td style="text-align:right;color:var(--txt2)">${r.ytd25>0?fmt(r.ytd25):'—'}</td>
       <td style="text-align:right;color:var(--txt2)">${r.ytd26>0?fmt(r.ytd26):'—'}</td>
       <td style="text-align:right">${r.ytd_pct!==null&&r.ytd_pct!==undefined?`<span class="pct-pill" style="background:${pBg(r.ytd_pct)};color:${pCol(r.ytd_pct)}">${fmtP(r.ytd_pct)}</span>`:'<span style="color:var(--txt3)">s/d</span>'}</td>
@@ -597,7 +624,6 @@ function renderTabla(){
       <td style="text-align:right;color:${r.dias>180?'var(--red)':r.dias>90?'var(--amber)':'var(--txt2)'}">${r.dias<400?r.dias+'d':'—'}</td>
       <td style="text-align:center"><span class="pill ${sC[r.status]}">${sL[r.status]}</span></td>
       <td style="font-size:11px;color:var(--txt2)">${fmtM(r.ultima)}</td>
-      <td style="font-size:11px;color:var(--txt3)">${fmtM(r.primera)}</td>
     </tr>`;
   }).join('')+filaTotal;
 }
