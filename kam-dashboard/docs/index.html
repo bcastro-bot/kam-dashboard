@@ -306,7 +306,7 @@ function renderKPIs(){
   document.getElementById('kpis').innerHTML=`
     <div class="kpi"><div class="kl">Revenue histórico</div><div class="kv">${fmt(C.total)}</div><div class="ks">${firstLabel} – ${lastLabel}</div></div>
     <div class="kpi"><div class="kl">${ytdLabel}</div><div class="kv" style="color:${pCol(C.ytd_pct)}">${fmtP(C.ytd_pct)}</div><div class="ks">${fmt(C.ytd25)} → ${fmt(C.ytd26)}</div></div>
-    <div class="kpi" style="background:var(--forecast-l)"><div class="kl" style="color:var(--forecast)">Forecast H2 2026</div><div class="kv" style="color:var(--forecast)">${fmt(C.forecast_total)}</div><div class="ks" style="color:var(--forecast)">H2 2025 × 1.35</div></div>
+    <div class="kpi" style="background:var(--forecast-l)"><div class="kl" style="color:var(--forecast)">Forecast H2 2026</div><div class="kv" style="color:var(--forecast)">${fmt((C.forecast_total||0)*1000)}</div><div class="ks" style="color:var(--forecast)">H2 2025 × 1.35</div></div>
     <div class="kpi" style="background:var(--green-l)"><div class="kl" style="color:var(--green)">Activos + nuevos</div><div class="kv" style="color:var(--green)">${counts.activo+counts.nuevo}</div><div class="ks" style="color:var(--green)">${Math.round((counts.activo+counts.nuevo)/cv.length*100)}% cartera</div></div>
     <div class="kpi" style="background:var(--amber-l)"><div class="kl" style="color:var(--amber)">En riesgo</div><div class="kv" style="color:var(--amber)">${counts['en riesgo']}</div><div class="ks" style="color:var(--amber)">90–180 días sin compra</div></div>
     <div class="kpi" style="background:var(--red-l)"><div class="kl" style="color:var(--red)">Churn</div><div class="kv" style="color:var(--red)">${counts.churn}</div><div class="ks" style="color:var(--red)">Sin compra en 2026</div></div>`;
@@ -413,7 +413,7 @@ function buildCliente(){
   const fv=d.forecast_vals||[];
   let fcHtml=d.forecast_has_data
     ? fv.map((v,i)=>`<div class="forecast-row"><span style="font-size:12px;color:var(--txt2)">${FM[i]}</span><span style="font-size:13px;font-weight:500;color:var(--forecast)">${v>0?fmtF(v):'—'}</span></div>`).join('')+
-      `<div style="display:flex;justify-content:space-between;padding:8px 0;margin-top:4px;border-top:.5px solid var(--forecast-b)"><span style="font-weight:500;color:var(--forecast)">Total H2 2026</span><span style="font-size:14px;font-weight:500;color:var(--forecast)">${fmtF(d.forecast_total)}</span></div>`
+      `<div style="display:flex;justify-content:space-between;padding:8px 0;margin-top:4px;border-top:.5px solid var(--forecast-b)"><span style="font-weight:500;color:var(--forecast)">Total H2 2026</span><span style="font-size:14px;font-weight:500;color:var(--forecast)">${fmtF((d.forecast_total||0)*1000)}</span></div>`
     : '<div style="color:var(--txt3);font-size:12px;padding:8px 0">Sin historial H2 2025 → forecast $0</div>';
   document.getElementById('pane-clientes').innerHTML=`
     <div class="srch" style="margin-bottom:8px">
@@ -486,7 +486,7 @@ function buildForecast(){
           </div></div>`).join('')}
         <div style="display:flex;justify-content:space-between;padding:10px 0 4px;border-top:.5px solid var(--forecast-b);margin-top:4px">
           <span style="font-size:13px;font-weight:500;color:var(--forecast)">Total H2 2026</span>
-          <span style="font-size:16px;font-weight:500;color:var(--forecast)">${fmtF(C.forecast_total)}</span>
+          <span style="font-size:16px;font-weight:500;color:var(--forecast)">${fmtF((C.forecast_total||0)*1000)}</span>
         </div>
       </div>
       <div class="card">
@@ -512,7 +512,7 @@ function buildForecast(){
                   <div style="height:3px;border-radius:1px;background:#FA345E;margin-top:3px;width:${bw}%;opacity:.4"></div></td>
                 <td style="text-align:right;color:var(--txt2)">${fmt(d.total)}</td>
                 ${(d.forecast_vals||[]).map(v=>`<td style="text-align:right;color:var(--forecast);font-weight:${v>0?500:400}">${v>0?fmt(v):'—'}</td>`).join('')}
-                <td style="text-align:right;font-weight:500;color:var(--forecast)">${d.forecast_total>0?fmt(d.forecast_total):'—'}</td>
+                <td style="text-align:right;font-weight:500;color:var(--forecast)">${d.forecast_total>0?fmt(d.forecast_total*1000):'—'}</td>
               </tr>`;
             }).join('')}
           </tbody>
@@ -594,7 +594,7 @@ function renderTabla(){
   const sumYtd25=rows.reduce((s,r)=>s+(r.ytd25||0),0);
   const sumYtd26=rows.reduce((s,r)=>s+(r.ytd26||0),0);
   const sumAvg=rows.reduce((s,r)=>s+(r.avg_2026||0),0);
-  const sumFc=rows.reduce((s,r)=>s+(r.forecast_total||0),0);
+  const sumFc=rows.reduce((s,r)=>s+(r.forecast_total||0)*1000,0);
   const ytdPct=sumYtd25>0?((sumYtd26-sumYtd25)/sumYtd25*100).toFixed(1):null;
   const filaTotal=`<tr style="background:var(--bg2);border-top:1.5px solid var(--border)">
     <td></td>
@@ -619,7 +619,7 @@ function renderTabla(){
       <td style="text-align:right;color:var(--txt2)">${r.ytd26>0?fmt(r.ytd26):'—'}</td>
       <td style="text-align:right">${r.ytd_pct!==null&&r.ytd_pct!==undefined?`<span class="pct-pill" style="background:${pBg(r.ytd_pct)};color:${pCol(r.ytd_pct)}">${fmtP(r.ytd_pct)}</span>`:'<span style="color:var(--txt3)">s/d</span>'}</td>
       <td style="text-align:right;font-weight:${r.avg_2026>0?500:400};color:${r.avg_2026>0?'#146787':'var(--txt3)'}">${r.avg_2026>0?fmt(r.avg_2026):'—'}</td>
-      <td style="text-align:right;font-weight:${r.forecast_total>0?500:400};color:${r.forecast_total>0?'var(--forecast)':'var(--txt3)'}">${r.forecast_total>0?fmt(r.forecast_total):'—'}</td>
+      <td style="text-align:right;font-weight:${r.forecast_total>0?500:400};color:${r.forecast_total>0?'var(--forecast)':'var(--txt3)'}">${r.forecast_total>0?fmt(r.forecast_total*1000):'—'}</td>
       <td style="text-align:right;color:var(--txt2)">${r.freq}<span style="color:var(--txt3)">/${DATA.hist_count||17}</span></td>
       <td style="text-align:right;color:${r.dias>180?'var(--red)':r.dias>90?'var(--amber)':'var(--txt2)'}">${r.dias<400?r.dias+'d':'—'}</td>
       <td style="text-align:center"><span class="pill ${sC[r.status]}">${sL[r.status]}</span></td>
