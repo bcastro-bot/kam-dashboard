@@ -957,8 +957,11 @@ function buildTickets(){
     yearSelHtml += '<div style="display:flex;gap:4px">';
     availYears.forEach(function(y){
       var active = y === selYear;
-      var btnStyle = 'font-size:12px;padding:4px 12px;border-radius:8px;cursor:pointer;border:0.5px solid ' + (active?'#FA345E':'var(--border)') + ';background:' + (active?'#FA345E':'none') + ';color:' + (active?'#fff':'var(--txt2)') + ';font-weight:' + (active?'600':'400');
-      yearSelHtml += '<button onclick="setProdYear(\"' + y + '\")" style="' + btnStyle + '">' + y + '</button>';
+      var btnBorder = active ? '#FA345E' : 'var(--border)';
+      var btnBg = active ? '#FA345E' : 'none';
+      var btnColor = active ? '#fff' : 'var(--txt2)';
+      var btnFw = active ? '600' : '400';
+      yearSelHtml += '<button data-year="' + y + '" class="prod-year-btn" style="font-size:12px;padding:4px 12px;border-radius:8px;cursor:pointer;font-family:inherit;border:0.5px solid ' + btnBorder + ';background:' + btnBg + ';color:' + btnColor + ';font-weight:' + btnFw + '">' + y + '</button>';
     });
     yearSelHtml += '</div></div>';
 
@@ -1023,6 +1026,10 @@ function buildTickets(){
   }
 
   el.innerHTML = html;
+  // Asignar eventos a los botones de año
+  el.querySelectorAll('.prod-year-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){ setProdYear(this.getAttribute('data-year')); });
+  });
 }
 
 function setProdYear(y){
