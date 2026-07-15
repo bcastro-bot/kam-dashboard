@@ -23,7 +23,7 @@ except ImportError:
 # ── Configuración ──────────────────────────────────────────────────────────────
 SHEET_NAMES     = ["CUADRATURAS", "OTROS_CUADRATURADOCUMENTOSINGRE"]
 REF_DATE        = pd.Timestamp("2026-08-01")
-CORTE_ACTIVO    = "2025-01"   # Desde este mes para considerar cliente activo del KAM
+DIAS_PERDIDO    = 365         # Más de N días sin compra → PERDIDOS
 OUTPUT_FILE     = Path("docs/data.json")
 FORECAST_GROWTH = 1.35
 VALID_KAMS      = ["BC", "BG", "LJ", "CF", "AA", "DA", "SC", "EC", "SG", "BACK", "PERDIDOS"]
@@ -173,11 +173,18 @@ def load_data(paths):
 
     combined = pd.concat(frames, ignore_index=True)
 
-    # 3. Separar clientes activos vs perdidos
-    compras_recientes = combined[(combined["Mes"] >= CORTE_ACTIVO) & (combined["Precio"] > 0)]
-    ruts_activos = set(compras_recientes["RUT_clean"].unique())
+    # 3. Separar clientes activos vs perdidos (criterio: +365 días sin compra)
+    # Calcular última compra por RUT
+    ultima_compra = combined[combined["Precio"] > 0].groupby("RUT_clean")["Mes"].max()
+    ruts_activos = set(
+        ultima_compra[
+            (REF_DATE - ultima_compra.apply(lambda m: pd.Timestamp(m + "-28"))).dt.days <= DIAS_PERDIDO
+        ].index
+    )
+    print(f"    → {len(ruts_activos)} RUTs con compra en los últimos {DIAS_PERDIDO} días")
+    print(f"    → {len(ultima_compra) - len(ruts_activos)} RUTs sin compra en +{DIAS_PERDIDO} días → PERDIDOS")
 
-    # Reasignar a PERDIDOS si nunca compraron desde CORTE_ACTIVO
+    # Reasignar a PERDIDOS si última compra fue hace más de DIAS_PERDIDO días
     combined["Kam"] = combined.apply(
         lambda r: r["Kam"] if r["RUT_clean"] in ruts_activos else "PERDIDOS",
         axis=1
@@ -342,7 +349,7 @@ if __name__ == "__main__":
 
     print(f"\n{'='*54}")
     print(f"  KAM Dashboard — Multi-KAM (2024–2026)")
-    print(f"  Corte activos: desde {CORTE_ACTIVO}")
+    print(f"  Criterio PERDIDOS: sin compra en +{DIAS_PERDIDO} días")
     print(f"{'='*54}\n")
 
     df = load_data(files)
@@ -351,7 +358,7 @@ if __name__ == "__main__":
     output = {
         "generated_at": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M"),
         "kams": kams_presentes,
-        "corte_activo": CORTE_ACTIVO,
+        "dias_perdido": DIAS_PERDIDO,
     }
 
     print(f"\n  Procesando KAMs: {kams_presentes}\n")
@@ -389,7 +396,7 @@ if __name__ == "__main__":
     kb = OUTPUT_FILE.stat().st_size/1024
     print(f"\n  ✓ {OUTPUT_FILE} · {kb:.0f} KB")
     print(f"  ✓ Años: {output[kams_presentes[0]]['years']}")
-    print(f"  ✓ Corte activos: desde {CORTE_ACTIVO}\n")
+    print(f"  ✓ Criterio PERDIDOS: sin compra en +{DIAS_PERDIDO} días\n")
     for kam in kams_presentes:
         t = output[kam]["cartera"]["total"]
         n = len(output[kam]["clients"])
