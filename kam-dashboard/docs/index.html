@@ -478,16 +478,28 @@ function buildForecast(){
     <div class="g2" style="margin-bottom:12px">
       <div class="card">
         <div class="ct">Forecast cartera H2 2026</div>
-        ${FM.map((m,i)=>`<div class="forecast-row">
-          <span style="font-size:12px;color:var(--txt2)">${m}</span>
-          <div style="text-align:right">
-            <span style="font-size:13px;font-weight:500;color:var(--forecast)">${fv[i]>0?fmtF(fv[i]):'—'}</span>
-            <span style="font-size:10px;color:var(--txt3);margin-left:8px">= ${['Jul','Ago','Sep','Oct','Nov','Dic'][i]} 2025 ×1.35</span>
-          </div></div>`).join('')}
-        <div style="display:flex;justify-content:space-between;padding:10px 0 4px;border-top:.5px solid var(--forecast-b);margin-top:4px">
-          <span style="font-size:13px;font-weight:500;color:var(--forecast)">Total H2 2026</span>
-          <span style="font-size:16px;font-weight:500;color:var(--forecast)">${fmtF((C.forecast_total||0)*1000)}</span>
-        </div>
+        ${(()=>{
+          // Agregar Jul 2026 como dato real si existe
+          const jul26idx = DATA.months.indexOf('2026-07');
+          const jul26val = jul26idx>=0 ? (C.vals[jul26idx]||0)*1000 : 0;
+          const jul26row = jul26val > 0 ? `<div class="forecast-row">
+            <span style="font-size:12px;color:var(--txt2)">Jul 26</span>
+            <div style="text-align:right">
+              <span style="font-size:13px;font-weight:500;color:#146787">${fmtF(jul26val)}</span>
+              <span style="font-size:10px;color:var(--txt3);margin-left:8px">real</span>
+            </div></div>` : '';
+          const fcRows = FM.map((m,i)=>`<div class="forecast-row">
+            <span style="font-size:12px;color:var(--txt2)">${m}</span>
+            <div style="text-align:right">
+              <span style="font-size:13px;font-weight:500;color:var(--forecast)">${fv[i]>0?fmtF(fv[i]):'—'}</span>
+              <span style="font-size:10px;color:var(--txt3);margin-left:8px">= ${['Ago','Sep','Oct','Nov','Dic'][i]} 2025 ×1.35</span>
+            </div></div>`).join('');
+          const totalH2 = jul26val + (C.forecast_total||0)*1000;
+          return jul26row + fcRows + `<div style="display:flex;justify-content:space-between;padding:10px 0 4px;border-top:.5px solid var(--forecast-b);margin-top:4px">
+            <span style="font-size:13px;font-weight:500;color:var(--forecast)">Total H2 2026</span>
+            <span style="font-size:16px;font-weight:500;color:var(--forecast)">${fmtF(totalH2)}</span>
+          </div>`;
+        })()}
       </div>
       <div class="card">
         <div class="ct">H2 2025 real vs Forecast H2 2026</div>
@@ -498,9 +510,10 @@ function buildForecast(){
       <div class="ct">Forecast por cliente — Top ${Math.min(clientsArr.length,50)}</div>
       <div class="tbl-wrap">
         <table>
-          <colgroup><col style="width:28px"><col style="min-width:160px"><col style="width:75px">${FM.map(()=>'<col style="width:70px">').join('')}<col style="width:80px"></colgroup>
+          <colgroup><col style="width:28px"><col style="min-width:160px"><col style="width:75px"><col style="width:70px">${FM.map(()=>'<col style="width:70px">').join('')}<col style="width:80px"></colgroup>
           <thead><tr>
             <th class="left">#</th><th class="left">Cliente</th><th>Total hist.</th>
+            <th style="color:#146787">Jul 26</th>
             ${FM.map(m=>`<th>${m}</th>`).join('')}<th>Total H2</th>
           </tr></thead>
           <tbody>
@@ -929,31 +942,62 @@ function buildTickets(){
   html += '<div class="kpi"><div class="kl">Ticket prom. 2025 → 2026</div><div class="kv" style="font-size:16px">' + fmt(avgP2025) + ' → ' + fmt(avgP2026) + '</div><div class="ks">promedio por año</div></div>';
   html += '</div>';
 
-  // Sección: estadísticas por categoría de producto
+  // Sección: estadísticas por categoría de producto con selector de año
   var pd = FULL_DATA.productos_data;
   if(pd && pd[curKAM]){
+    // Detectar años disponibles desde productos_months
+    var pmonths = FULL_DATA.productos_months || [];
+    var _yearSet={}; pmonths.forEach(function(m){_yearSet[m.slice(0,4)]=1;}); var availYears=Object.keys(_yearSet).sort();
+    var selYear = window._prodYear || availYears[availYears.length-1]; // default: último año
+    if(!availYears.includes(selYear)) selYear = availYears[availYears.length-1];
+    window._prodYear = selYear;
+
+    var yearSelHtml = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">';
+    yearSelHtml += '<span style="font-size:11px;color:var(--txt2);font-weight:500">AÑO:</span>';
+    yearSelHtml += '<div style="display:flex;gap:4px">';
+    availYears.forEach(function(y){
+      var active = y === selYear;
+      yearSelHtml += '<button onclick="setProdYear('' + y + '')" style="font-size:12px;padding:4px 12px;border-radius:8px;border:0.5px solid ' + (active?'#FA345E':'var(--border)') + ';background:' + (active?'#FA345E':'none') + ';color:' + (active?'#fff':'var(--txt2)') + ';cursor:pointer;font-weight:' + (active?'600':'400') + '">' + y + '</button>';
+    });
+    yearSelHtml += '</div></div>';
+
+    // Calcular revenue por categoría para el año seleccionado
     var catColors = {'Puntos':'#FA345E','Gift Card':'#146787','Software':'#45C1AD','Agencia':'#B2A8E7','Comisión':'#97E89F','Efectivo':'#FFB300','Fee SaaS':'#9B59B6','Plataforma':'#E67E22','Ajuste':'#888','Otros':'#999','Sin clasificar':'#bbb'};
     var catK = pd[curKAM];
-    var sortedCats = Object.keys(catK).sort(function(a,b){ return catK[b].total - catK[a].total; });
-    var grandTotal = sortedCats.reduce(function(s,c){ return s + catK[c].total; }, 0);
-    var maxTotal = sortedCats.length ? catK[sortedCats[0]].total : 1;
+    var monthsForYear = pmonths.map(function(m,i){ return {m:m, i:i}; }).filter(function(x){ return x.m.startsWith(selYear); });
 
-    html += '<div class="card"><div class="ct">Ventas por tipo de producto — ' + curKAM + '</div>';
-    html += '<p class="note" style="margin-bottom:14px">% de participación y ticket promedio por categoría (histórico)</p>';
+    // Calcular totales filtrados por año
+    var catTotals = {};
+    Object.keys(catK).forEach(function(cat){
+      var rev = monthsForYear.reduce(function(s,x){ return s + (catK[cat].vals[x.i]||0); }, 0);
+      var tix = 0;
+      // tickets: proporcional al revenue del año seleccionado vs total
+      if(catK[cat].total > 0 && catK[cat].tickets){
+        tix = Math.round(catK[cat].tickets * rev / catK[cat].total);
+      }
+      if(rev > 0) catTotals[cat] = { revenue: rev, tickets: tix, ticket_prom: tix>0?Math.round(rev/tix):0 };
+    });
+
+    var sortedCats = Object.keys(catTotals).sort(function(a,b){ return catTotals[b].revenue - catTotals[a].revenue; });
+    var grandTotal = sortedCats.reduce(function(s,c){ return s + catTotals[c].revenue; }, 0);
+    var maxTotal = sortedCats.length ? catTotals[sortedCats[0]].revenue : 1;
+
+    html += '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:8px"><div class="ct" style="margin:0">Ventas por tipo de producto — ' + curKAM + '</div></div>';
+    html += yearSelHtml;
     html += '<div class="tbl-wrap"><table style="width:100%;border-collapse:collapse">';
     html += '<thead><tr style="background:var(--bg2)">';
     html += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:left;border-bottom:0.5px solid var(--border)">Categoría</th>';
     html += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:left;border-bottom:0.5px solid var(--border)">% Participación</th>';
-    html += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right;border-bottom:0.5px solid var(--border)">Revenue</th>';
+    html += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right;border-bottom:0.5px solid var(--border)">Revenue ' + selYear + '</th>';
     html += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right;border-bottom:0.5px solid var(--border)">N Tickets</th>';
     html += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right;border-bottom:0.5px solid var(--border)">Ticket Promedio</th>';
     html += '</tr></thead><tbody>';
 
     sortedCats.forEach(function(cat){
       var c2 = catColors[cat] || '#888';
-      var v = catK[cat];
-      var pct = grandTotal > 0 ? Math.round(v.total/grandTotal*100) : 0;
-      var bw = Math.round(v.total/maxTotal*100);
+      var v = catTotals[cat];
+      var pct = grandTotal > 0 ? Math.round(v.revenue/grandTotal*100) : 0;
+      var bw = Math.round(v.revenue/maxTotal*100);
       html += '<tr>';
       html += '<td style="padding:9px 8px;font-size:12px;font-weight:600;color:' + c2 + ';border-bottom:0.5px solid var(--border)">' + cat + '</td>';
       html += '<td style="padding:9px 8px;border-bottom:0.5px solid var(--border)">';
@@ -962,7 +1006,7 @@ function buildTickets(){
       html += '<div style="width:' + bw + '%;background:' + c2 + ';height:12px;border-radius:4px"></div></div>';
       html += '<span style="font-size:12px;font-weight:600;color:' + c2 + ';width:36px;text-align:right">' + pct + '%</span>';
       html += '</div></td>';
-      html += '<td style="text-align:right;padding:9px 8px;font-size:13px;font-weight:600;color:var(--txt);border-bottom:0.5px solid var(--border)">' + fmt(v.total) + '</td>';
+      html += '<td style="text-align:right;padding:9px 8px;font-size:13px;font-weight:600;color:var(--txt);border-bottom:0.5px solid var(--border)">' + fmt(v.revenue) + '</td>';
       html += '<td style="text-align:right;padding:9px 8px;font-size:12px;color:var(--txt2);border-bottom:0.5px solid var(--border)">' + (v.tickets || '—') + '</td>';
       html += '<td style="text-align:right;padding:9px 8px;font-size:12px;font-weight:500;color:' + c2 + ';border-bottom:0.5px solid var(--border)">' + (v.ticket_prom ? fmt(v.ticket_prom) : '—') + '</td>';
       html += '</tr>';
@@ -978,6 +1022,11 @@ function buildTickets(){
   }
 
   el.innerHTML = html;
+}
+
+function setProdYear(y){
+  window._prodYear = y;
+  buildTickets();
 }
 
 // Arranque
