@@ -957,7 +957,8 @@ function buildTickets(){
     yearSelHtml += '<div style="display:flex;gap:4px">';
     availYears.forEach(function(y){
       var active = y === selYear;
-      yearSelHtml += '<button onclick="setProdYear('' + y + '')" style="font-size:12px;padding:4px 12px;border-radius:8px;border:0.5px solid ' + (active?'#FA345E':'var(--border)') + ';background:' + (active?'#FA345E':'none') + ';color:' + (active?'#fff':'var(--txt2)') + ';cursor:pointer;font-weight:' + (active?'600':'400') + '">' + y + '</button>';
+      var btnStyle = 'font-size:12px;padding:4px 12px;border-radius:8px;cursor:pointer;border:0.5px solid ' + (active?'#FA345E':'var(--border)') + ';background:' + (active?'#FA345E':'none') + ';color:' + (active?'#fff':'var(--txt2)') + ';font-weight:' + (active?'600':'400');
+      yearSelHtml += '<button onclick="setProdYear(\"' + y + '\")" style="' + btnStyle + '">' + y + '</button>';
     });
     yearSelHtml += '</div></div>';
 
