@@ -183,6 +183,7 @@ select{font-size:11px;padding:4px 8px;border:.5px solid var(--border);border-rad
         <button class="tab" onclick="showTab('clientes')">Por cliente</button>
         <button class="tab" onclick="showTab('forecast')">Forecast 2026</button>
         <button class="tab" onclick="showTab('activos')">Clientes por mes</button>
+        <button class="tab" onclick="showTab('pormes')">Por mes</button>
         <button class="tab" onclick="showTab('tabla')">Tabla completa</button>
       </div>
       <div id="pane-equipo" style="display:none"></div>
@@ -191,6 +192,7 @@ select{font-size:11px;padding:4px 8px;border:.5px solid var(--border);border-rad
       <div id="pane-clientes" style="display:none"></div>
       <div id="pane-forecast" style="display:none"></div>
       <div id="pane-activos" style="display:none"></div>
+      <div id="pane-pormes" style="display:none"></div>
       <div id="pane-tabla" style="display:none"></div>
     </div>
   </div>
@@ -276,14 +278,15 @@ function setPeriod(){
 
 function showTab(t){
   curTab=t;
-  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',['equipo','tickets','cartera','clientes','forecast','activos','tabla'][i]===t));
-  ['equipo','tickets','cartera','clientes','forecast','activos','tabla'].forEach(id=>document.getElementById('pane-'+id).style.display=id===t?'block':'none');
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',['equipo','tickets','cartera','clientes','forecast','activos','pormes','tabla'][i]===t));
+  ['equipo','tickets','cartera','clientes','forecast','activos','pormes','tabla'].forEach(id=>document.getElementById('pane-'+id).style.display=id===t?'block':'none');
   if(t==='equipo')buildEquipo();
   else if(t==='tickets')buildTickets();
   else if(t==='cartera')buildCartera();
   else if(t==='clientes')buildCliente();
   else if(t==='forecast')buildForecast();
   else if(t==='activos')buildActivos();
+  else if(t==='pormes')buildPorMes();
   else buildTabla();
 }
 
@@ -1035,6 +1038,100 @@ function buildTickets(){
 function setProdYear(y){
   window._prodYear = y;
   buildTickets();
+}
+
+// ── Tab Por Mes ─────────────────────────────────────────────────────────────
+var _mesSel = null;
+
+function buildPorMes(){
+  var el = document.getElementById('pane-pormes');
+  var months = DATA.months;
+  var hc = DATA.hist_count;
+  var histMonths = months.slice(0, hc);
+  var labels = DATA.month_labels;
+
+  // Selector de mes - default: último mes real
+  if(!_mesSel || !histMonths.includes(_mesSel)) _mesSel = histMonths[hc-1];
+
+  // Construir selector
+  var selHtml = '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">';
+  selHtml += '<span style="font-size:12px;font-weight:500;color:var(--txt2)">Selecciona el mes:</span>';
+  selHtml += '<select id="mes-select" style="font-size:12px;padding:5px 10px;border:.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--txt);font-family:inherit">';
+  histMonths.forEach(function(m, i){
+    var lbl = labels[i] || m;
+    selHtml += '<option value="' + m + '"' + (m === _mesSel ? ' selected' : '') + '>' + lbl + '</option>';
+  });
+  selHtml += '</select></div>';
+
+  // Renderizar tabla para el mes seleccionado
+  var mesIdx = months.indexOf(_mesSel);
+  var lbl = labels[mesIdx] || _mesSel;
+  var clientes = Object.entries(DATA.clients)
+    .map(function(e){ return {nombre: e[0], val: (e[1].vals && mesIdx < e[1].vals.length ? e[1].vals[mesIdx]*1000 : 0), status: e[1].status, total: e[1].total, dias: e[1].dias, ultima: e[1].ultima}; })
+    .filter(function(c){ return c.val > 0; })
+    .sort(function(a,b){ return b.val - a.val; });
+
+  var totalMes = clientes.reduce(function(s,c){ return s+c.val; }, 0);
+  var maxVal = clientes.length ? clientes[0].val : 1;
+  var sC = {activo:'p-activo',nuevo:'p-nuevo','en riesgo':'p-riesgo',churn:'p-churn'};
+  var sL = {activo:'Activo',nuevo:'Nuevo','en riesgo':'En riesgo',churn:'Churn'};
+
+  var tableHtml = '';
+  if(!clientes.length){
+    tableHtml = '<div style="padding:20px;color:var(--txt3);text-align:center">Sin compras registradas en ' + lbl + '</div>';
+  } else {
+    tableHtml = '<div class="tbl-wrap"><table style="width:100%;border-collapse:collapse">';
+    tableHtml += '<colgroup><col style="width:32px"><col style="min-width:180px"><col style="min-width:180px"><col style="width:90px"><col style="width:55px"><col style="width:80px"><col style="width:75px"></colgroup>';
+    tableHtml += '<thead><tr style="background:var(--bg2)">';
+    tableHtml += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:left;border-bottom:0.5px solid var(--border)">#</th>';
+    tableHtml += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:left;border-bottom:0.5px solid var(--border)">Cliente</th>';
+    tableHtml += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:left;border-bottom:0.5px solid var(--border)">Participación</th>';
+    tableHtml += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right;border-bottom:0.5px solid var(--border)">Compra ' + lbl + '</th>';
+    tableHtml += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right;border-bottom:0.5px solid var(--border)">% Total</th>';
+    tableHtml += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:right;border-bottom:0.5px solid var(--border)">Revenue total</th>';
+    tableHtml += '<th style="padding:7px 8px;font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;text-align:center;border-bottom:0.5px solid var(--border)">Estado</th>';
+    tableHtml += '</tr></thead><tbody>';
+
+    clientes.forEach(function(c, i){
+      var bw = Math.round(c.val/maxVal*100);
+      var pct = totalMes > 0 ? (c.val/totalMes*100).toFixed(1) : 0;
+      tableHtml += '<tr>';
+      tableHtml += '<td style="padding:8px;text-align:center;font-size:11px;color:var(--txt3);border-bottom:0.5px solid var(--border)">' + (i+1) + '</td>';
+      tableHtml += '<td style="padding:8px;font-size:12px;font-weight:500;border-bottom:0.5px solid var(--border)">' + c.nombre + '</td>';
+      tableHtml += '<td style="padding:8px;border-bottom:0.5px solid var(--border)">';
+      tableHtml += '<div style="display:flex;align-items:center;gap:6px">';
+      tableHtml += '<div style="flex:1;background:var(--bg3);border-radius:3px;height:8px"><div style="width:' + bw + '%;background:#FA345E;height:8px;border-radius:3px"></div></div>';
+      tableHtml += '<span style="font-size:10px;color:var(--txt3);width:30px;text-align:right">' + pct + '%</span>';
+      tableHtml += '</div></td>';
+      tableHtml += '<td style="padding:8px;text-align:right;font-size:13px;font-weight:600;color:#FA345E;border-bottom:0.5px solid var(--border)">' + fmt(c.val) + '</td>';
+      tableHtml += '<td style="padding:8px;text-align:right;font-size:11px;color:var(--txt3);border-bottom:0.5px solid var(--border)">' + pct + '%</td>';
+      tableHtml += '<td style="padding:8px;text-align:right;font-size:12px;color:var(--txt2);border-bottom:0.5px solid var(--border)">' + fmt(c.total) + '</td>';
+      tableHtml += '<td style="padding:8px;text-align:center;border-bottom:0.5px solid var(--border)"><span class="pill ' + (sC[c.status]||'') + '">' + (sL[c.status]||c.status) + '</span></td>';
+      tableHtml += '</tr>';
+    });
+
+    // Fila total
+    tableHtml += '<tr style="background:var(--bg2);border-top:1.5px solid var(--border)">';
+    tableHtml += '<td></td>';
+    tableHtml += '<td style="padding:8px;font-size:12px;font-weight:700">TOTAL (' + clientes.length + ' clientes)</td>';
+    tableHtml += '<td></td>';
+    tableHtml += '<td style="padding:8px;text-align:right;font-size:13px;font-weight:700;color:#FA345E">' + fmt(totalMes) + '</td>';
+    tableHtml += '<td style="padding:8px;text-align:right;font-size:12px;font-weight:700">100%</td>';
+    tableHtml += '<td></td><td></td>';
+    tableHtml += '</tr>';
+    tableHtml += '</tbody></table></div>';
+  }
+
+  el.innerHTML = selHtml +
+    '<div class="card" style="padding:0;overflow:hidden">' +
+    '<div style="padding:12px 14px;background:var(--bg);border-bottom:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center">' +
+    '<div class="ct" style="margin:0">Detalle ' + lbl + ' — ' + clientes.length + ' clientes compraron</div>' +
+    '<span style="font-size:13px;font-weight:600;color:#FA345E">' + fmt(totalMes) + '</span>' +
+    '</div>' + tableHtml + '</div>';
+
+  // Event listener selector de mes
+  var selEl = document.getElementById('mes-select');
+  if(selEl) selEl.addEventListener('change', function(){ _mesSel = this.value; buildPorMes(); });
 }
 
 // Arranque
