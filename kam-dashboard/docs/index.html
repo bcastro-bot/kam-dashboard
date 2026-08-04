@@ -712,13 +712,18 @@ function buildEquipo(){
   kamsMain.forEach(k=>Object.values(FULL_DATA[k].clients).forEach(c=>counts[c.status]=(counts[c.status]||0)+1));
 
   // Tabla ranking KAMs
+  const curYear=(FULL_DATA[kamsMain[0]].years||['2026']).slice(-1)[0];
+  const totalRevCurYear=kamsMain.reduce((s,k)=>{const ry=FULL_DATA[k].cartera.rev_by_year||{};return s+(ry[curYear]||0);},0);
   const kamRows=kamsMain.map(k=>{
     const d=FULL_DATA[k];
     const cl=Object.values(d.clients);
     const cnt={activo:0,nuevo:0,'en riesgo':0,churn:0};
     cl.forEach(c=>cnt[c.status]=(cnt[c.status]||0)+1);
     const share=totalRev>0?(d.cartera.total/totalRev*100).toFixed(1):0;
-    return{kam:k,total:d.cartera.total,clientes:cl.length,ytd_pct:d.cartera.ytd_pct,fc:(d.cartera.forecast_total||0)*1000,share,cnt};
+    const ry=d.cartera.rev_by_year||{};
+    const revCurY=ry[curYear]||0;
+    const shareCurY=totalRevCurYear>0?(revCurY/totalRevCurYear*100).toFixed(1):0;
+    return{kam:k,total:d.cartera.total,clientes:cl.length,ytd_pct:d.cartera.ytd_pct,fc:(d.cartera.forecast_total||0)*1000,share,shareCurY,revCurY,cnt};
   }).sort((a,b)=>b.total-a.total);
 
   // Meses comunes para gráfico equipo
@@ -747,13 +752,14 @@ function buildEquipo(){
         <div class="ct">Ranking KAMs — revenue histórico</div>
         <div class="tbl-wrap">
           <table>
-            <colgroup><col style="width:28px"><col style="width:48px"><col style="min-width:120px"><col style="width:72px"><col style="width:55px"><col style="width:72px"><col style="width:60px"><col style="width:72px"></colgroup>
+            <colgroup><col style="width:28px"><col style="width:48px"><col style="min-width:100px"><col style="width:72px"><col style="width:60px"><col style="width:70px"><col style="width:62px"><col style="width:60px"><col style="width:72px"></colgroup>
             <thead><tr>
               <th class="left">#</th>
               <th class="left">KAM</th>
               <th class="left">Distribución</th>
               <th>Revenue</th>
-              <th>Share</th>
+              <th>Share hist.</th>
+              <th style="color:#FA345E">Share ${curYear}</th>
               <th>YTD vs 25</th>
               <th>Clientes</th>
               <th style="color:var(--forecast)">Forecast H2</th>
@@ -768,6 +774,7 @@ function buildEquipo(){
                   <td><div style="background:var(--bg3);border-radius:3px;height:6px"><div style="width:${bw}%;background:${col};height:6px;border-radius:3px"></div></div></td>
                   <td style="text-align:right;font-weight:500">${fmt(r.total)}</td>
                   <td style="text-align:right;color:var(--txt3)">${r.share}%</td>
+                  <td style="text-align:right;font-weight:500;color:#FA345E">${r.shareCurY}%</td>
                   <td style="text-align:right">${r.ytd_pct!==null?`<span class="pct-pill" style="background:${pBg(r.ytd_pct)};color:${pCol(r.ytd_pct)}">${fmtP(r.ytd_pct)}</span>`:'<span style="color:var(--txt3)">s/d</span>'}</td>
                   <td style="text-align:right;color:var(--txt2)">${r.clientes}</td>
                   <td style="text-align:right;color:var(--forecast);font-weight:500">${r.fc>0?fmt(r.fc):'—'}</td>
@@ -779,6 +786,7 @@ function buildEquipo(){
                 <td></td>
                 <td style="text-align:right;font-weight:600">${fmt(totalRev)}</td>
                 <td style="text-align:right;font-weight:600">100%</td>
+                <td style="text-align:right;font-weight:600;color:#FA345E">100%</td>
                 <td style="text-align:right">${teamYtdPct!==null?`<span class="pct-pill" style="background:${pBg(parseFloat(teamYtdPct))};color:${pCol(parseFloat(teamYtdPct))};font-weight:600">${parseFloat(teamYtdPct)>=0?'+':''}${teamYtdPct}%</span>`:'—'}</td>
                 <td style="text-align:right;font-weight:600">${totalClientes}</td>
                 <td style="text-align:right;font-weight:600;color:var(--forecast)">${fmt(totalFc)}</td>
