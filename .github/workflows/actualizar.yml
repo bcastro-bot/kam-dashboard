@@ -1,0 +1,44 @@
+name: Actualizar Dashboard
+
+on:
+  push:
+    paths:
+      - 'kam-dashboard/data/*.xlsx'   # Se activa solo cuando subes un Excel
+
+jobs:
+  procesar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install pandas openpyxl
+
+      - name: Procesar Excel y generar data.json
+        run: |
+          cd kam-dashboard
+          # Buscar el Excel más reciente en la carpeta data/
+          EXCEL=$(ls data/*.xlsx 2>/dev/null | head -1)
+          if [ -z "$EXCEL" ]; then
+            echo "No se encontró ningún Excel en data/"
+            exit 1
+          fi
+          echo "Procesando: $EXCEL"
+          python procesar_datos.py "$EXCEL"
+
+      - name: Publicar data.json actualizado
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add kam-dashboard/docs/data.json
+          git diff --staged --quiet || git commit -m "Auto: actualizar data.json [skip ci]"
+          git push
