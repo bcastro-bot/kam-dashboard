@@ -236,7 +236,13 @@ def build_kam_data(df_kam):
     months_by_year = {y:[m for m in hist_months if m.startswith(y)] for y in years}
     cur_y = max(years)
     prev_y = str(int(cur_y)-1)
-    yoy_pairs = [(prev_y+"-"+m[5:], m) for m in months_by_year.get(cur_y,[])
+
+    # Excluir mes actual si no está cerrado (para YTD correcto)
+    # Un mes se considera cerrado si NO es el mes actual del calendario
+    mes_hoy = REF_DATE.strftime("%Y-%m")
+    meses_cerrados_cur = [m for m in months_by_year.get(cur_y,[]) if m < mes_hoy]
+
+    yoy_pairs = [(prev_y+"-"+m[5:], m) for m in meses_cerrados_cur
                  if prev_y+"-"+m[5:] in hist_months]
 
     clients = {}
@@ -252,7 +258,7 @@ def build_kam_data(df_kam):
         days        = int((REF_DATE - pd.Timestamp(last_m+"-28")).days) if last_m else 999
         rev_by_year = {y: sum(vd.get(m,0) for m in months_by_year.get(y,[])) for y in years}
 
-        months_cur = months_by_year.get(cur_y,[])
+        months_cur = [m for m in months_by_year.get(cur_y,[]) if m < mes_hoy]  # solo meses cerrados
         ytd_by_year = {}
         for y in years:
             ytd_by_year[y] = sum(vd.get(y+"-"+m[5:],0) for m in months_cur if y+"-"+m[5:] in hist_months)
@@ -297,7 +303,7 @@ def build_kam_data(df_kam):
 
     mh = [macro.get(m,0) for m in hist_months]
     mf = [macro.get(m,0) for m in forecast_months]
-    ytd_c = {y: sum(macro.get(y+"-"+m[5:],0) for m in months_by_year.get(cur_y,[]) if y+"-"+m[5:] in hist_months) for y in years}
+    ytd_c = {y: sum(macro.get(y+"-"+m[5:],0) for m in meses_cerrados_cur if y+"-"+m[5:] in hist_months) for y in years}
 
     cartera = {
         "total": sum(mh),
