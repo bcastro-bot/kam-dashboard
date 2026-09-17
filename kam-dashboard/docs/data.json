@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-17 12:03:53",
+  "generated_at": "2026-09-17 12:10:06",
   "kams": [
     "AA",
     "BACK",
@@ -62,7 +62,6 @@
     "2026-11",
     "2026-12"
   ],
-  "productos_months": [],
   "month_labels": [
     "Ene 24",
     "Feb 24",
@@ -2081,6 +2080,173 @@
         "tickets": 133,
         "revenue": 150247078,
         "ticket_prom": 1129677
+      }
+    },
+    "clientes_por_mes": {
+      "2024-01": {
+        "label": "Ene 24",
+        "count": 4,
+        "revenue": 1048873
+      },
+      "2024-02": {
+        "label": "Feb 24",
+        "count": 5,
+        "revenue": 1343233
+      },
+      "2024-03": {
+        "label": "Mar 24",
+        "count": 5,
+        "revenue": 2572000
+      },
+      "2024-04": {
+        "label": "Abr 24",
+        "count": 8,
+        "revenue": 2075000
+      },
+      "2024-05": {
+        "label": "May 24",
+        "count": 4,
+        "revenue": 1740000
+      },
+      "2024-06": {
+        "label": "Jun 24",
+        "count": 8,
+        "revenue": 18943788
+      },
+      "2024-07": {
+        "label": "Jul 24",
+        "count": 5,
+        "revenue": 24251977
+      },
+      "2024-08": {
+        "label": "Ago 24",
+        "count": 6,
+        "revenue": 9563562
+      },
+      "2024-09": {
+        "label": "Sep 24",
+        "count": 8,
+        "revenue": 12287368
+      },
+      "2024-10": {
+        "label": "Oct 24",
+        "count": 7,
+        "revenue": 19635729
+      },
+      "2024-11": {
+        "label": "Nov 24",
+        "count": 5,
+        "revenue": 10743884
+      },
+      "2024-12": {
+        "label": "Dic 24",
+        "count": 7,
+        "revenue": 97570148
+      },
+      "2025-01": {
+        "label": "Ene 25",
+        "count": 8,
+        "revenue": 22586492
+      },
+      "2025-02": {
+        "label": "Feb 25",
+        "count": 6,
+        "revenue": 10120752
+      },
+      "2025-03": {
+        "label": "Mar 25",
+        "count": 7,
+        "revenue": 20558962
+      },
+      "2025-04": {
+        "label": "Abr 25",
+        "count": 3,
+        "revenue": 14426800
+      },
+      "2025-05": {
+        "label": "May 25",
+        "count": 5,
+        "revenue": 14381042
+      },
+      "2025-06": {
+        "label": "Jun 25",
+        "count": 5,
+        "revenue": 64931688
+      },
+      "2025-07": {
+        "label": "Jul 25",
+        "count": 8,
+        "revenue": 36454778
+      },
+      "2025-08": {
+        "label": "Ago 25",
+        "count": 4,
+        "revenue": 38448777
+      },
+      "2025-09": {
+        "label": "Sep 25",
+        "count": 6,
+        "revenue": 56730676
+      },
+      "2025-10": {
+        "label": "Oct 25",
+        "count": 8,
+        "revenue": 45574776
+      },
+      "2025-11": {
+        "label": "Nov 25",
+        "count": 4,
+        "revenue": 246063261
+      },
+      "2025-12": {
+        "label": "Dic 25",
+        "count": 6,
+        "revenue": 733041320
+      },
+      "2026-01": {
+        "label": "Ene 26",
+        "count": 5,
+        "revenue": 46481638
+      },
+      "2026-02": {
+        "label": "Feb 26",
+        "count": 5,
+        "revenue": 3972017
+      },
+      "2026-03": {
+        "label": "Mar 26",
+        "count": 4,
+        "revenue": 36747900
+      },
+      "2026-04": {
+        "label": "Abr 26",
+        "count": 8,
+        "revenue": 19784080
+      },
+      "2026-05": {
+        "label": "May 26",
+        "count": 7,
+        "revenue": 30237788
+      },
+      "2026-06": {
+        "label": "Jun 26",
+        "count": 8,
+        "revenue": 43388656
+      },
+      "2026-07": {
+        "label": "Jul 26",
+        "count": 5,
+        "revenue": 29010120
+      },
+      "2026-08": {
+        "label": "Ago 26",
+        "count": 3,
+        "revenue": 94766350
+      },
+      "2026-09": {
+        "label": "Sep 26",
+        "count": 2,
+        "revenue": 150247078
       }
     },
     "months": [
@@ -17598,6 +17764,173 @@
         "ticket_prom": 1471336
       }
     },
+    "clientes_por_mes": {
+      "2024-01": {
+        "label": "Ene 24",
+        "count": 50,
+        "revenue": 71976223
+      },
+      "2024-02": {
+        "label": "Feb 24",
+        "count": 43,
+        "revenue": 49588388
+      },
+      "2024-03": {
+        "label": "Mar 24",
+        "count": 48,
+        "revenue": 54462757
+      },
+      "2024-04": {
+        "label": "Abr 24",
+        "count": 38,
+        "revenue": 75820406
+      },
+      "2024-05": {
+        "label": "May 24",
+        "count": 37,
+        "revenue": 48398478
+      },
+      "2024-06": {
+        "label": "Jun 24",
+        "count": 39,
+        "revenue": 45242863
+      },
+      "2024-07": {
+        "label": "Jul 24",
+        "count": 46,
+        "revenue": 58576704
+      },
+      "2024-08": {
+        "label": "Ago 24",
+        "count": 42,
+        "revenue": 48465915
+      },
+      "2024-09": {
+        "label": "Sep 24",
+        "count": 71,
+        "revenue": 112309110
+      },
+      "2024-10": {
+        "label": "Oct 24",
+        "count": 53,
+        "revenue": 66850400
+      },
+      "2024-11": {
+        "label": "Nov 24",
+        "count": 50,
+        "revenue": 86483725
+      },
+      "2024-12": {
+        "label": "Dic 24",
+        "count": 90,
+        "revenue": 198252234
+      },
+      "2025-01": {
+        "label": "Ene 25",
+        "count": 41,
+        "revenue": 14542040
+      },
+      "2025-02": {
+        "label": "Feb 25",
+        "count": 40,
+        "revenue": 22471483
+      },
+      "2025-03": {
+        "label": "Mar 25",
+        "count": 42,
+        "revenue": 31134123
+      },
+      "2025-04": {
+        "label": "Abr 25",
+        "count": 48,
+        "revenue": 24815395
+      },
+      "2025-05": {
+        "label": "May 25",
+        "count": 40,
+        "revenue": 27710665
+      },
+      "2025-06": {
+        "label": "Jun 25",
+        "count": 46,
+        "revenue": 20492912
+      },
+      "2025-07": {
+        "label": "Jul 25",
+        "count": 51,
+        "revenue": 30745057
+      },
+      "2025-08": {
+        "label": "Ago 25",
+        "count": 46,
+        "revenue": 22852148
+      },
+      "2025-09": {
+        "label": "Sep 25",
+        "count": 89,
+        "revenue": 89606982
+      },
+      "2025-10": {
+        "label": "Oct 25",
+        "count": 49,
+        "revenue": 29142555
+      },
+      "2025-11": {
+        "label": "Nov 25",
+        "count": 51,
+        "revenue": 51567194
+      },
+      "2025-12": {
+        "label": "Dic 25",
+        "count": 100,
+        "revenue": 173804751
+      },
+      "2026-01": {
+        "label": "Ene 26",
+        "count": 44,
+        "revenue": 37385261
+      },
+      "2026-02": {
+        "label": "Feb 26",
+        "count": 33,
+        "revenue": 35911528
+      },
+      "2026-03": {
+        "label": "Mar 26",
+        "count": 44,
+        "revenue": 47652780
+      },
+      "2026-04": {
+        "label": "Abr 26",
+        "count": 44,
+        "revenue": 35568471
+      },
+      "2026-05": {
+        "label": "May 26",
+        "count": 44,
+        "revenue": 43209172
+      },
+      "2026-06": {
+        "label": "Jun 26",
+        "count": 46,
+        "revenue": 24199289
+      },
+      "2026-07": {
+        "label": "Jul 26",
+        "count": 40,
+        "revenue": 25287770
+      },
+      "2026-08": {
+        "label": "Ago 26",
+        "count": 46,
+        "revenue": 44899583
+      },
+      "2026-09": {
+        "label": "Sep 26",
+        "count": 64,
+        "revenue": 119178278
+      }
+    },
     "months": [
       "2024-01",
       "2024-02",
@@ -27401,6 +27734,173 @@
         "ticket_prom": 4440469
       }
     },
+    "clientes_por_mes": {
+      "2024-01": {
+        "label": "Ene 24",
+        "count": 51,
+        "revenue": 466211186
+      },
+      "2024-02": {
+        "label": "Feb 24",
+        "count": 46,
+        "revenue": 242284623
+      },
+      "2024-03": {
+        "label": "Mar 24",
+        "count": 52,
+        "revenue": 332836977
+      },
+      "2024-04": {
+        "label": "Abr 24",
+        "count": 58,
+        "revenue": 344301004
+      },
+      "2024-05": {
+        "label": "May 24",
+        "count": 45,
+        "revenue": 210992336
+      },
+      "2024-06": {
+        "label": "Jun 24",
+        "count": 48,
+        "revenue": 260163306
+      },
+      "2024-07": {
+        "label": "Jul 24",
+        "count": 53,
+        "revenue": 430977729
+      },
+      "2024-08": {
+        "label": "Ago 24",
+        "count": 52,
+        "revenue": 321194022
+      },
+      "2024-09": {
+        "label": "Sep 24",
+        "count": 60,
+        "revenue": 419856785
+      },
+      "2024-10": {
+        "label": "Oct 24",
+        "count": 53,
+        "revenue": 585118517
+      },
+      "2024-11": {
+        "label": "Nov 24",
+        "count": 56,
+        "revenue": 339059026
+      },
+      "2024-12": {
+        "label": "Dic 24",
+        "count": 80,
+        "revenue": 1125439637
+      },
+      "2025-01": {
+        "label": "Ene 25",
+        "count": 63,
+        "revenue": 378027687
+      },
+      "2025-02": {
+        "label": "Feb 25",
+        "count": 47,
+        "revenue": 250527259
+      },
+      "2025-03": {
+        "label": "Mar 25",
+        "count": 59,
+        "revenue": 425044505
+      },
+      "2025-04": {
+        "label": "Abr 25",
+        "count": 51,
+        "revenue": 386066316
+      },
+      "2025-05": {
+        "label": "May 25",
+        "count": 60,
+        "revenue": 363678631
+      },
+      "2025-06": {
+        "label": "Jun 25",
+        "count": 53,
+        "revenue": 605028999
+      },
+      "2025-07": {
+        "label": "Jul 25",
+        "count": 65,
+        "revenue": 192304870
+      },
+      "2025-08": {
+        "label": "Ago 25",
+        "count": 61,
+        "revenue": 279553356
+      },
+      "2025-09": {
+        "label": "Sep 25",
+        "count": 78,
+        "revenue": 674376092
+      },
+      "2025-10": {
+        "label": "Oct 25",
+        "count": 62,
+        "revenue": 654406094
+      },
+      "2025-11": {
+        "label": "Nov 25",
+        "count": 55,
+        "revenue": 454635136
+      },
+      "2025-12": {
+        "label": "Dic 25",
+        "count": 80,
+        "revenue": 939079421
+      },
+      "2026-01": {
+        "label": "Ene 26",
+        "count": 61,
+        "revenue": 383374158
+      },
+      "2026-02": {
+        "label": "Feb 26",
+        "count": 53,
+        "revenue": 372832529
+      },
+      "2026-03": {
+        "label": "Mar 26",
+        "count": 51,
+        "revenue": 758854045
+      },
+      "2026-04": {
+        "label": "Abr 26",
+        "count": 56,
+        "revenue": 642045964
+      },
+      "2026-05": {
+        "label": "May 26",
+        "count": 57,
+        "revenue": 465324722
+      },
+      "2026-06": {
+        "label": "Jun 26",
+        "count": 50,
+        "revenue": 439556876
+      },
+      "2026-07": {
+        "label": "Jul 26",
+        "count": 57,
+        "revenue": 566973884
+      },
+      "2026-08": {
+        "label": "Ago 26",
+        "count": 66,
+        "revenue": 393152763
+      },
+      "2026-09": {
+        "label": "Sep 26",
+        "count": 70,
+        "revenue": 674951301
+      }
+    },
     "months": [
       "2024-01",
       "2024-02",
@@ -35641,6 +36141,173 @@
         "ticket_prom": 9079801
       }
     },
+    "clientes_por_mes": {
+      "2024-01": {
+        "label": "Ene 24",
+        "count": 43,
+        "revenue": 437127285
+      },
+      "2024-02": {
+        "label": "Feb 24",
+        "count": 37,
+        "revenue": 546749725
+      },
+      "2024-03": {
+        "label": "Mar 24",
+        "count": 33,
+        "revenue": 416478712
+      },
+      "2024-04": {
+        "label": "Abr 24",
+        "count": 48,
+        "revenue": 527464762
+      },
+      "2024-05": {
+        "label": "May 24",
+        "count": 44,
+        "revenue": 705441532
+      },
+      "2024-06": {
+        "label": "Jun 24",
+        "count": 42,
+        "revenue": 663517376
+      },
+      "2024-07": {
+        "label": "Jul 24",
+        "count": 49,
+        "revenue": 517902768
+      },
+      "2024-08": {
+        "label": "Ago 24",
+        "count": 52,
+        "revenue": 1020408125
+      },
+      "2024-09": {
+        "label": "Sep 24",
+        "count": 60,
+        "revenue": 726095498
+      },
+      "2024-10": {
+        "label": "Oct 24",
+        "count": 59,
+        "revenue": 644865005
+      },
+      "2024-11": {
+        "label": "Nov 24",
+        "count": 57,
+        "revenue": 971104938
+      },
+      "2024-12": {
+        "label": "Dic 24",
+        "count": 65,
+        "revenue": 989212887
+      },
+      "2025-01": {
+        "label": "Ene 25",
+        "count": 44,
+        "revenue": 646652768
+      },
+      "2025-02": {
+        "label": "Feb 25",
+        "count": 47,
+        "revenue": 864708851
+      },
+      "2025-03": {
+        "label": "Mar 25",
+        "count": 51,
+        "revenue": 628570695
+      },
+      "2025-04": {
+        "label": "Abr 25",
+        "count": 61,
+        "revenue": 764067126
+      },
+      "2025-05": {
+        "label": "May 25",
+        "count": 47,
+        "revenue": 699217466
+      },
+      "2025-06": {
+        "label": "Jun 25",
+        "count": 51,
+        "revenue": 603467813
+      },
+      "2025-07": {
+        "label": "Jul 25",
+        "count": 52,
+        "revenue": 614656629
+      },
+      "2025-08": {
+        "label": "Ago 25",
+        "count": 60,
+        "revenue": 1164602752
+      },
+      "2025-09": {
+        "label": "Sep 25",
+        "count": 63,
+        "revenue": 813212793
+      },
+      "2025-10": {
+        "label": "Oct 25",
+        "count": 55,
+        "revenue": 619097684
+      },
+      "2025-11": {
+        "label": "Nov 25",
+        "count": 47,
+        "revenue": 1058771609
+      },
+      "2025-12": {
+        "label": "Dic 25",
+        "count": 58,
+        "revenue": 987885354
+      },
+      "2026-01": {
+        "label": "Ene 26",
+        "count": 54,
+        "revenue": 747757342
+      },
+      "2026-02": {
+        "label": "Feb 26",
+        "count": 38,
+        "revenue": 596758832
+      },
+      "2026-03": {
+        "label": "Mar 26",
+        "count": 46,
+        "revenue": 534882574
+      },
+      "2026-04": {
+        "label": "Abr 26",
+        "count": 62,
+        "revenue": 603133294
+      },
+      "2026-05": {
+        "label": "May 26",
+        "count": 50,
+        "revenue": 574924939
+      },
+      "2026-06": {
+        "label": "Jun 26",
+        "count": 55,
+        "revenue": 703291884
+      },
+      "2026-07": {
+        "label": "Jul 26",
+        "count": 47,
+        "revenue": 594969596
+      },
+      "2026-08": {
+        "label": "Ago 26",
+        "count": 56,
+        "revenue": 706798063
+      },
+      "2026-09": {
+        "label": "Sep 26",
+        "count": 50,
+        "revenue": 1243932872
+      }
+    },
     "months": [
       "2024-01",
       "2024-02",
@@ -43735,6 +44402,173 @@
         "tickets": 137,
         "revenue": 347236071,
         "ticket_prom": 2534569
+      }
+    },
+    "clientes_por_mes": {
+      "2024-01": {
+        "label": "Ene 24",
+        "count": 49,
+        "revenue": 377766161
+      },
+      "2024-02": {
+        "label": "Feb 24",
+        "count": 48,
+        "revenue": 708053543
+      },
+      "2024-03": {
+        "label": "Mar 24",
+        "count": 46,
+        "revenue": 311602139
+      },
+      "2024-04": {
+        "label": "Abr 24",
+        "count": 56,
+        "revenue": 577137948
+      },
+      "2024-05": {
+        "label": "May 24",
+        "count": 52,
+        "revenue": 575151719
+      },
+      "2024-06": {
+        "label": "Jun 24",
+        "count": 51,
+        "revenue": 590221020
+      },
+      "2024-07": {
+        "label": "Jul 24",
+        "count": 54,
+        "revenue": 316675808
+      },
+      "2024-08": {
+        "label": "Ago 24",
+        "count": 52,
+        "revenue": 680458986
+      },
+      "2024-09": {
+        "label": "Sep 24",
+        "count": 64,
+        "revenue": 878344275
+      },
+      "2024-10": {
+        "label": "Oct 24",
+        "count": 64,
+        "revenue": 126050964
+      },
+      "2024-11": {
+        "label": "Nov 24",
+        "count": 51,
+        "revenue": 370707767
+      },
+      "2024-12": {
+        "label": "Dic 24",
+        "count": 70,
+        "revenue": 1202138125
+      },
+      "2025-01": {
+        "label": "Ene 25",
+        "count": 55,
+        "revenue": 297208569
+      },
+      "2025-02": {
+        "label": "Feb 25",
+        "count": 43,
+        "revenue": 353262301
+      },
+      "2025-03": {
+        "label": "Mar 25",
+        "count": 48,
+        "revenue": 177862962
+      },
+      "2025-04": {
+        "label": "Abr 25",
+        "count": 51,
+        "revenue": 262670154
+      },
+      "2025-05": {
+        "label": "May 25",
+        "count": 55,
+        "revenue": 382206133
+      },
+      "2025-06": {
+        "label": "Jun 25",
+        "count": 49,
+        "revenue": 438042654
+      },
+      "2025-07": {
+        "label": "Jul 25",
+        "count": 54,
+        "revenue": 530628329
+      },
+      "2025-08": {
+        "label": "Ago 25",
+        "count": 53,
+        "revenue": 381474799
+      },
+      "2025-09": {
+        "label": "Sep 25",
+        "count": 65,
+        "revenue": 509652341
+      },
+      "2025-10": {
+        "label": "Oct 25",
+        "count": 51,
+        "revenue": 357125516
+      },
+      "2025-11": {
+        "label": "Nov 25",
+        "count": 59,
+        "revenue": 433385116
+      },
+      "2025-12": {
+        "label": "Dic 25",
+        "count": 57,
+        "revenue": 492364160
+      },
+      "2026-01": {
+        "label": "Ene 26",
+        "count": 45,
+        "revenue": 242533067
+      },
+      "2026-02": {
+        "label": "Feb 26",
+        "count": 50,
+        "revenue": 395490202
+      },
+      "2026-03": {
+        "label": "Mar 26",
+        "count": 47,
+        "revenue": 362137851
+      },
+      "2026-04": {
+        "label": "Abr 26",
+        "count": 56,
+        "revenue": 436627387
+      },
+      "2026-05": {
+        "label": "May 26",
+        "count": 54,
+        "revenue": 302180531
+      },
+      "2026-06": {
+        "label": "Jun 26",
+        "count": 56,
+        "revenue": 537267660
+      },
+      "2026-07": {
+        "label": "Jul 26",
+        "count": 54,
+        "revenue": 389637969
+      },
+      "2026-08": {
+        "label": "Ago 26",
+        "count": 53,
+        "revenue": 495949617
+      },
+      "2026-09": {
+        "label": "Sep 26",
+        "count": 60,
+        "revenue": 347236071
       }
     },
     "months": [
@@ -52130,6 +52964,173 @@
         "ticket_prom": 2673854
       }
     },
+    "clientes_por_mes": {
+      "2024-01": {
+        "label": "Ene 24",
+        "count": 2,
+        "revenue": 3610000
+      },
+      "2024-02": {
+        "label": "Feb 24",
+        "count": 2,
+        "revenue": 260000
+      },
+      "2024-03": {
+        "label": "Mar 24",
+        "count": 1,
+        "revenue": 25000
+      },
+      "2024-04": {
+        "label": "Abr 24",
+        "count": 1,
+        "revenue": 150000
+      },
+      "2024-05": {
+        "label": "May 24",
+        "count": 3,
+        "revenue": 9530000
+      },
+      "2024-06": {
+        "label": "Jun 24",
+        "count": 1,
+        "revenue": 130000
+      },
+      "2024-07": {
+        "label": "Jul 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-08": {
+        "label": "Ago 24",
+        "count": 1,
+        "revenue": 60000
+      },
+      "2024-09": {
+        "label": "Sep 24",
+        "count": 4,
+        "revenue": 18725000
+      },
+      "2024-10": {
+        "label": "Oct 24",
+        "count": 1,
+        "revenue": 4260000
+      },
+      "2024-11": {
+        "label": "Nov 24",
+        "count": 1,
+        "revenue": 186000
+      },
+      "2024-12": {
+        "label": "Dic 24",
+        "count": 4,
+        "revenue": 6315000
+      },
+      "2025-01": {
+        "label": "Ene 25",
+        "count": 5,
+        "revenue": 1705000
+      },
+      "2025-02": {
+        "label": "Feb 25",
+        "count": 2,
+        "revenue": 2000000
+      },
+      "2025-03": {
+        "label": "Mar 25",
+        "count": 3,
+        "revenue": 2280000
+      },
+      "2025-04": {
+        "label": "Abr 25",
+        "count": 2,
+        "revenue": 5950000
+      },
+      "2025-05": {
+        "label": "May 25",
+        "count": 3,
+        "revenue": 3600000
+      },
+      "2025-06": {
+        "label": "Jun 25",
+        "count": 1,
+        "revenue": 6000000
+      },
+      "2025-07": {
+        "label": "Jul 25",
+        "count": 2,
+        "revenue": 2350000
+      },
+      "2025-08": {
+        "label": "Ago 25",
+        "count": 3,
+        "revenue": 1856000
+      },
+      "2025-09": {
+        "label": "Sep 25",
+        "count": 6,
+        "revenue": 22215000
+      },
+      "2025-10": {
+        "label": "Oct 25",
+        "count": 5,
+        "revenue": 3350000
+      },
+      "2025-11": {
+        "label": "Nov 25",
+        "count": 10,
+        "revenue": 24405415
+      },
+      "2025-12": {
+        "label": "Dic 25",
+        "count": 21,
+        "revenue": 42828379
+      },
+      "2026-01": {
+        "label": "Ene 26",
+        "count": 14,
+        "revenue": 12078378
+      },
+      "2026-02": {
+        "label": "Feb 26",
+        "count": 10,
+        "revenue": 50800533
+      },
+      "2026-03": {
+        "label": "Mar 26",
+        "count": 4,
+        "revenue": 3160000
+      },
+      "2026-04": {
+        "label": "Abr 26",
+        "count": 14,
+        "revenue": 40873000
+      },
+      "2026-05": {
+        "label": "May 26",
+        "count": 14,
+        "revenue": 61413514
+      },
+      "2026-06": {
+        "label": "Jun 26",
+        "count": 9,
+        "revenue": 17459700
+      },
+      "2026-07": {
+        "label": "Jul 26",
+        "count": 15,
+        "revenue": 12387590
+      },
+      "2026-08": {
+        "label": "Ago 26",
+        "count": 6,
+        "revenue": 4107000
+      },
+      "2026-09": {
+        "label": "Sep 26",
+        "count": 9,
+        "revenue": 29412400
+      }
+    },
     "months": [
       "2024-01",
       "2024-02",
@@ -52489,6 +53490,173 @@
         "tickets": 0,
         "revenue": 0,
         "ticket_prom": 0
+      }
+    },
+    "clientes_por_mes": {
+      "2024-01": {
+        "label": "Ene 24",
+        "count": 1,
+        "revenue": 600000
+      },
+      "2024-02": {
+        "label": "Feb 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-03": {
+        "label": "Mar 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-04": {
+        "label": "Abr 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-05": {
+        "label": "May 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-06": {
+        "label": "Jun 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-07": {
+        "label": "Jul 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-08": {
+        "label": "Ago 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-09": {
+        "label": "Sep 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-10": {
+        "label": "Oct 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-11": {
+        "label": "Nov 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-12": {
+        "label": "Dic 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-01": {
+        "label": "Ene 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-02": {
+        "label": "Feb 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-03": {
+        "label": "Mar 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-04": {
+        "label": "Abr 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-05": {
+        "label": "May 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-06": {
+        "label": "Jun 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-07": {
+        "label": "Jul 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-08": {
+        "label": "Ago 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-09": {
+        "label": "Sep 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-10": {
+        "label": "Oct 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-11": {
+        "label": "Nov 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-12": {
+        "label": "Dic 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-01": {
+        "label": "Ene 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-02": {
+        "label": "Feb 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-03": {
+        "label": "Mar 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-04": {
+        "label": "Abr 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-05": {
+        "label": "May 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-06": {
+        "label": "Jun 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-07": {
+        "label": "Jul 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-08": {
+        "label": "Ago 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-09": {
+        "label": "Sep 26",
+        "count": 0,
+        "revenue": 0
       }
     },
     "months": [
@@ -53054,6 +54222,173 @@
         "tickets": 0,
         "revenue": 0,
         "ticket_prom": 0
+      }
+    },
+    "clientes_por_mes": {
+      "2024-01": {
+        "label": "Ene 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-02": {
+        "label": "Feb 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-03": {
+        "label": "Mar 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-04": {
+        "label": "Abr 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-05": {
+        "label": "May 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-06": {
+        "label": "Jun 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-07": {
+        "label": "Jul 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-08": {
+        "label": "Ago 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-09": {
+        "label": "Sep 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-10": {
+        "label": "Oct 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-11": {
+        "label": "Nov 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-12": {
+        "label": "Dic 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-01": {
+        "label": "Ene 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-02": {
+        "label": "Feb 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-03": {
+        "label": "Mar 25",
+        "count": 1,
+        "revenue": 50000
+      },
+      "2025-04": {
+        "label": "Abr 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-05": {
+        "label": "May 25",
+        "count": 1,
+        "revenue": 50000
+      },
+      "2025-06": {
+        "label": "Jun 25",
+        "count": 1,
+        "revenue": 50000
+      },
+      "2025-07": {
+        "label": "Jul 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-08": {
+        "label": "Ago 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-09": {
+        "label": "Sep 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-10": {
+        "label": "Oct 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-11": {
+        "label": "Nov 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-12": {
+        "label": "Dic 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-01": {
+        "label": "Ene 26",
+        "count": 2,
+        "revenue": 38655
+      },
+      "2026-02": {
+        "label": "Feb 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-03": {
+        "label": "Mar 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-04": {
+        "label": "Abr 26",
+        "count": 1,
+        "revenue": 4622
+      },
+      "2026-05": {
+        "label": "May 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-06": {
+        "label": "Jun 26",
+        "count": 1,
+        "revenue": 25210
+      },
+      "2026-07": {
+        "label": "Jul 26",
+        "count": 1,
+        "revenue": 23529
+      },
+      "2026-08": {
+        "label": "Ago 26",
+        "count": 1,
+        "revenue": 30000
+      },
+      "2026-09": {
+        "label": "Sep 26",
+        "count": 0,
+        "revenue": 0
       }
     },
     "months": [
@@ -61445,6 +62780,173 @@
         "ticket_prom": 3315046
       }
     },
+    "clientes_por_mes": {
+      "2024-01": {
+        "label": "Ene 24",
+        "count": 39,
+        "revenue": 155027854
+      },
+      "2024-02": {
+        "label": "Feb 24",
+        "count": 34,
+        "revenue": 158388158
+      },
+      "2024-03": {
+        "label": "Mar 24",
+        "count": 36,
+        "revenue": 160759806
+      },
+      "2024-04": {
+        "label": "Abr 24",
+        "count": 37,
+        "revenue": 213212820
+      },
+      "2024-05": {
+        "label": "May 24",
+        "count": 35,
+        "revenue": 100210497
+      },
+      "2024-06": {
+        "label": "Jun 24",
+        "count": 39,
+        "revenue": 154342467
+      },
+      "2024-07": {
+        "label": "Jul 24",
+        "count": 39,
+        "revenue": 173049058
+      },
+      "2024-08": {
+        "label": "Ago 24",
+        "count": 42,
+        "revenue": 186063937
+      },
+      "2024-09": {
+        "label": "Sep 24",
+        "count": 51,
+        "revenue": 431227323
+      },
+      "2024-10": {
+        "label": "Oct 24",
+        "count": 38,
+        "revenue": 202593223
+      },
+      "2024-11": {
+        "label": "Nov 24",
+        "count": 43,
+        "revenue": 185548327
+      },
+      "2024-12": {
+        "label": "Dic 24",
+        "count": 59,
+        "revenue": 331267124
+      },
+      "2025-01": {
+        "label": "Ene 25",
+        "count": 54,
+        "revenue": 366104260
+      },
+      "2025-02": {
+        "label": "Feb 25",
+        "count": 51,
+        "revenue": 496907801
+      },
+      "2025-03": {
+        "label": "Mar 25",
+        "count": 58,
+        "revenue": 411629940
+      },
+      "2025-04": {
+        "label": "Abr 25",
+        "count": 57,
+        "revenue": 365001997
+      },
+      "2025-05": {
+        "label": "May 25",
+        "count": 55,
+        "revenue": 428506565
+      },
+      "2025-06": {
+        "label": "Jun 25",
+        "count": 56,
+        "revenue": 255307987
+      },
+      "2025-07": {
+        "label": "Jul 25",
+        "count": 65,
+        "revenue": 296617266
+      },
+      "2025-08": {
+        "label": "Ago 25",
+        "count": 68,
+        "revenue": 421585916
+      },
+      "2025-09": {
+        "label": "Sep 25",
+        "count": 75,
+        "revenue": 499529952
+      },
+      "2025-10": {
+        "label": "Oct 25",
+        "count": 60,
+        "revenue": 284631702
+      },
+      "2025-11": {
+        "label": "Nov 25",
+        "count": 63,
+        "revenue": 449933094
+      },
+      "2025-12": {
+        "label": "Dic 25",
+        "count": 86,
+        "revenue": 911225472
+      },
+      "2026-01": {
+        "label": "Ene 26",
+        "count": 59,
+        "revenue": 271039721
+      },
+      "2026-02": {
+        "label": "Feb 26",
+        "count": 63,
+        "revenue": 335753409
+      },
+      "2026-03": {
+        "label": "Mar 26",
+        "count": 63,
+        "revenue": 454441766
+      },
+      "2026-04": {
+        "label": "Abr 26",
+        "count": 62,
+        "revenue": 463644378
+      },
+      "2026-05": {
+        "label": "May 26",
+        "count": 61,
+        "revenue": 449593290
+      },
+      "2026-06": {
+        "label": "Jun 26",
+        "count": 63,
+        "revenue": 387774038
+      },
+      "2026-07": {
+        "label": "Jul 26",
+        "count": 64,
+        "revenue": 253352643
+      },
+      "2026-08": {
+        "label": "Ago 26",
+        "count": 65,
+        "revenue": 440302785
+      },
+      "2026-09": {
+        "label": "Sep 26",
+        "count": 37,
+        "revenue": 232053282
+      }
+    },
     "months": [
       "2024-01",
       "2024-02",
@@ -61857,6 +63359,173 @@
         "ticket_prom": 0
       }
     },
+    "clientes_por_mes": {
+      "2024-01": {
+        "label": "Ene 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-02": {
+        "label": "Feb 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-03": {
+        "label": "Mar 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-04": {
+        "label": "Abr 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-05": {
+        "label": "May 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-06": {
+        "label": "Jun 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-07": {
+        "label": "Jul 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-08": {
+        "label": "Ago 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-09": {
+        "label": "Sep 24",
+        "count": 1,
+        "revenue": 10000
+      },
+      "2024-10": {
+        "label": "Oct 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-11": {
+        "label": "Nov 24",
+        "count": 1,
+        "revenue": 20000
+      },
+      "2024-12": {
+        "label": "Dic 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-01": {
+        "label": "Ene 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-02": {
+        "label": "Feb 25",
+        "count": 1,
+        "revenue": 9540000
+      },
+      "2025-03": {
+        "label": "Mar 25",
+        "count": 1,
+        "revenue": 5000
+      },
+      "2025-04": {
+        "label": "Abr 25",
+        "count": 1,
+        "revenue": 8800000
+      },
+      "2025-05": {
+        "label": "May 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-06": {
+        "label": "Jun 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-07": {
+        "label": "Jul 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-08": {
+        "label": "Ago 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-09": {
+        "label": "Sep 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-10": {
+        "label": "Oct 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-11": {
+        "label": "Nov 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-12": {
+        "label": "Dic 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-01": {
+        "label": "Ene 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-02": {
+        "label": "Feb 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-03": {
+        "label": "Mar 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-04": {
+        "label": "Abr 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-05": {
+        "label": "May 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-06": {
+        "label": "Jun 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-07": {
+        "label": "Jul 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-08": {
+        "label": "Ago 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-09": {
+        "label": "Sep 26",
+        "count": 0,
+        "revenue": 0
+      }
+    },
     "months": [
       "2024-01",
       "2024-02",
@@ -62225,6 +63894,173 @@
         "ticket_prom": 0
       }
     },
+    "clientes_por_mes": {
+      "2024-01": {
+        "label": "Ene 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-02": {
+        "label": "Feb 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-03": {
+        "label": "Mar 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-04": {
+        "label": "Abr 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-05": {
+        "label": "May 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-06": {
+        "label": "Jun 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-07": {
+        "label": "Jul 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-08": {
+        "label": "Ago 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-09": {
+        "label": "Sep 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-10": {
+        "label": "Oct 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-11": {
+        "label": "Nov 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2024-12": {
+        "label": "Dic 24",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-01": {
+        "label": "Ene 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-02": {
+        "label": "Feb 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-03": {
+        "label": "Mar 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-04": {
+        "label": "Abr 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-05": {
+        "label": "May 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-06": {
+        "label": "Jun 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-07": {
+        "label": "Jul 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-08": {
+        "label": "Ago 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-09": {
+        "label": "Sep 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-10": {
+        "label": "Oct 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2025-11": {
+        "label": "Nov 25",
+        "count": 1,
+        "revenue": 10000
+      },
+      "2025-12": {
+        "label": "Dic 25",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-01": {
+        "label": "Ene 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-02": {
+        "label": "Feb 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-03": {
+        "label": "Mar 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-04": {
+        "label": "Abr 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-05": {
+        "label": "May 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-06": {
+        "label": "Jun 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-07": {
+        "label": "Jul 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-08": {
+        "label": "Ago 26",
+        "count": 0,
+        "revenue": 0
+      },
+      "2026-09": {
+        "label": "Sep 26",
+        "count": 0,
+        "revenue": 0
+      }
+    },
     "months": [
       "2024-01",
       "2024-02",
@@ -62309,172 +64145,5 @@
       "2026-11",
       "2026-12"
     ]
-  },
-  "clientes_por_mes": {
-    "2024-01": {
-      "label": "Ene 24",
-      "count": 239,
-      "revenue": 1513367582
-    },
-    "2024-02": {
-      "label": "Feb 24",
-      "count": 215,
-      "revenue": 1706667670
-    },
-    "2024-03": {
-      "label": "Mar 24",
-      "count": 221,
-      "revenue": 1278737391
-    },
-    "2024-04": {
-      "label": "Abr 24",
-      "count": 246,
-      "revenue": 1740161940
-    },
-    "2024-05": {
-      "label": "May 24",
-      "count": 219,
-      "revenue": 1651464562
-    },
-    "2024-06": {
-      "label": "Jun 24",
-      "count": 227,
-      "revenue": 1732560820
-    },
-    "2024-07": {
-      "label": "Jul 24",
-      "count": 246,
-      "revenue": 1521434044
-    },
-    "2024-08": {
-      "label": "Ago 24",
-      "count": 247,
-      "revenue": 2266214547
-    },
-    "2024-09": {
-      "label": "Sep 24",
-      "count": 318,
-      "revenue": 2598855359
-    },
-    "2024-10": {
-      "label": "Oct 24",
-      "count": 275,
-      "revenue": 1649373838
-    },
-    "2024-11": {
-      "label": "Nov 24",
-      "count": 264,
-      "revenue": 1963853667
-    },
-    "2024-12": {
-      "label": "Dic 24",
-      "count": 374,
-      "revenue": 3950195155
-    },
-    "2025-01": {
-      "label": "Ene 25",
-      "count": 270,
-      "revenue": 1726826816
-    },
-    "2025-02": {
-      "label": "Feb 25",
-      "count": 237,
-      "revenue": 2009538447
-    },
-    "2025-03": {
-      "label": "Mar 25",
-      "count": 270,
-      "revenue": 1697136187
-    },
-    "2025-04": {
-      "label": "Abr 25",
-      "count": 274,
-      "revenue": 1831797788
-    },
-    "2025-05": {
-      "label": "May 25",
-      "count": 266,
-      "revenue": 1919350502
-    },
-    "2025-06": {
-      "label": "Jun 25",
-      "count": 262,
-      "revenue": 1993322053
-    },
-    "2025-07": {
-      "label": "Jul 25",
-      "count": 297,
-      "revenue": 1703756929
-    },
-    "2025-08": {
-      "label": "Ago 25",
-      "count": 294,
-      "revenue": 2310373748
-    },
-    "2025-09": {
-      "label": "Sep 25",
-      "count": 382,
-      "revenue": 2665323836
-    },
-    "2025-10": {
-      "label": "Oct 25",
-      "count": 290,
-      "revenue": 1993328327
-    },
-    "2025-11": {
-      "label": "Nov 25",
-      "count": 289,
-      "revenue": 2718770825
-    },
-    "2025-12": {
-      "label": "Dic 25",
-      "count": 407,
-      "revenue": 4280228857
-    },
-    "2026-01": {
-      "label": "Ene 26",
-      "count": 284,
-      "revenue": 1740688220
-    },
-    "2026-02": {
-      "label": "Feb 26",
-      "count": 252,
-      "revenue": 1791519050
-    },
-    "2026-03": {
-      "label": "Mar 26",
-      "count": 259,
-      "revenue": 2197876916
-    },
-    "2026-04": {
-      "label": "Abr 26",
-      "count": 300,
-      "revenue": 2241681196
-    },
-    "2026-05": {
-      "label": "May 26",
-      "count": 287,
-      "revenue": 1926883956
-    },
-    "2026-06": {
-      "label": "Jun 26",
-      "count": 288,
-      "revenue": 2152963313
-    },
-    "2026-07": {
-      "label": "Jul 26",
-      "count": 283,
-      "revenue": 1871643101
-    },
-    "2026-08": {
-      "label": "Ago 26",
-      "count": 296,
-      "revenue": 2180006161
-    },
-    "2026-09": {
-      "label": "Sep 26",
-      "count": 292,
-      "revenue": 2797011282
-    }
   }
 }
